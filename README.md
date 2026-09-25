@@ -89,15 +89,51 @@ The server will start at `http://127.0.0.1:8000/`.
 .venv/bin/python manage.py test apps.accounts.tests apps.categories.tests apps.store.tests common.tests --keepdb
 ```
 
+## Phase 3: React Frontend Integration
+
+The modern React Single Page Application (SPA) resides in the `frontend/` directory and connects to the DRF API foundation.
+
+### Frontend Tech Stack
+- **React 18** + **Vite 8**
+- **Tailwind CSS** + **Lucide Icons**
+- **Axios** (Centralized client with automatic JWT token refresh & `X-Guest-Cart-Key` tracking)
+- **React Router v6** (Protected & Public Route Guards)
+- **Razorpay Checkout SDK** (Client modal integration with backend signature verification)
+- **React Hot Toast** (Toast notifications)
+
+### 1. Environment Configuration (`frontend/.env`)
+```env
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+VITE_RAZORPAY_KEY_ID=rzp_test_YourKeyHere
+```
+
+### 2. Development Setup & Commands
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start Vite development server (http://localhost:5173)
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build locally
+npm run preview
+```
+
 ## Project layout
 
 ```
+frontend/        React SPA (components, pages, context, API layer, routes, Vite config)
 config/          Django settings split (base, development, production), URLs, WSGI/ASGI
 common/          Shared permissions, pagination, and standardized exception handling
-apps/            accounts, admin, cart, categories, core, coupons, reviews, services, store
-templates/       Shared HTML templates (retained for parallel operation)
+apps/            accounts, cart, categories, coupons, orders, payments, store, etc.
+templates/       Shared Django HTML/HTMX templates (retained for parallel operation)
 docs/            audit, security, deployment, environment, CI/CD
-.github/         CI + CD workflows
 ```
 
 ## Database Migration Config (PostgreSQL Ready)

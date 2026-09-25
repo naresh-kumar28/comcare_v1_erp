@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'apps.admin.apps.AdminConfig',
     'apps.services.apps.ServicesConfig',
     'apps.reviews.apps.ReviewsConfig',
+    'apps.payments.apps.PaymentsConfig',
 ]
 
 MIDDLEWARE = [
@@ -196,6 +197,7 @@ SPECTACULAR_SETTINGS = {
 # Razorpay Configuration
 RAZORPAY_KEY_ID = config('RAZORPAY_KEY_ID', default='')
 RAZORPAY_KEY_SECRET = config('RAZORPAY_KEY_SECRET', default='')
+RAZORPAY_WEBHOOK_SECRET = config('RAZORPAY_WEBHOOK_SECRET', default='')
 RAZORPAY_MODE = config('RAZORPAY_MODE', default='test')
 
 # Email Configuration

@@ -5,6 +5,10 @@ from decimal import Decimal
 from unittest.mock import patch
 
 from django.test import TestCase, override_settings
+from rest_framework.test import APITestCase
+from rest_framework import status
+from django.contrib.auth import get_user_model
+from django.urls import reverse
 
 from apps.cart.models import (
     Cart,
@@ -17,6 +21,8 @@ from apps.cart.models import (
 from apps.categories.models import Category
 from apps.store.models import Product
 from apps.store.tests import make_image
+
+User = get_user_model()
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
@@ -221,7 +227,6 @@ class PaymentVerificationSecurityTests(TestCase):
         response = self.post_verify(self.order.order_number, 'rp_SERVER_CREATED_1')
         self.assertEqual(response.status_code, 400)
         self.order.refresh_from_db()
-        # The dangerous old sandbox auto-verify must NOT apply in production.
         self.assertEqual(self.order.payment_status, 'failed')
 
     def test_rejects_order_id_not_created_by_server(self):
@@ -242,7 +247,6 @@ class PaymentVerificationSecurityTests(TestCase):
     @override_settings(RAZORPAY_KEY_ID='test_key', RAZORPAY_KEY_SECRET='test_secret')
     @patch('razorpay.Client')
     def test_valid_signature_but_wrong_order_id_still_rejected(self, mock_client):
-        # Even a cryptographically valid signature for a different order must fail.
         response = self.post_verify(self.order.order_number, 'rp_OTHER_ORDER')
         self.assertEqual(response.status_code, 400)
         self.order.refresh_from_db()
@@ -258,3 +262,103 @@ class PaymentVerificationSecurityTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.order.refresh_from_db()
         self.assertEqual(self.order.payment_status, 'paid')
+
+
+# ============================================================================
+# Phase 2 DRF Cart & Commerce API Tests
+# ============================================================================
+
+class CartAPITests(APITestCase):
+    def setUp(self):
+        self.category = Category.objects.create(name='Laptops', slug='laptops', is_active=True)
+        self.product = Product.objects.create(
+            category=self.category,
+            title='Test Laptop',
+            slug='test-laptop',
+            sku='SKU-API-1',
+            selling_price=Decimal('1000.00'),
+            is_active=True
+        )
+
+        self.user = User.objects.create_user(email='buyer@example.com', password='Password123!')
+        self.cart_url = reverse('api_cart_detail')
+        self.add_item_url = reverse('api_cart_item_add')
+        self.addresses_url = reverse('api_addresses_list_create')
+        self.shipping_config_url = reverse('api_shipping_config')
+        self.orders_url = reverse('api_orders_list_create')
+
+    def test_get_cart_guest(self):
+        response = self.client.get(self.cart_url, HTTP_X_GUEST_CART_KEY='guest_session_123')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['success'])
+        self.assertEqual(response.data['cart']['total_items'], 0)
+
+    def test_add_item_to_cart_and_get_cart(self):
+        payload = {'product_id': self.product.id, 'quantity': 2}
+        response = self.client.post(self.add_item_url, payload, format='json', HTTP_X_GUEST_CART_KEY='guest_session_123')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['cart']['total_items'], 2)
+        self.assertEqual(Decimal(str(response.data['cart']['subtotal'])), Decimal('2000.00'))
+
+    def test_cart_merge_guest_to_user(self):
+        payload = {'product_id': self.product.id, 'quantity': 3}
+        self.client.post(self.add_item_url, payload, format='json', HTTP_X_GUEST_CART_KEY='guest_session_merge')
+
+        self.client.force_authenticate(user=self.user)
+        merge_url = reverse('api_cart_merge')
+        response = self.client.post(merge_url, format='json', HTTP_X_GUEST_CART_KEY='guest_session_merge')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['cart']['total_items'], 3)
+
+    def test_address_crud(self):
+        self.client.force_authenticate(user=self.user)
+        address_payload = {
+            'full_name': 'Buyer User',
+            'phone': '9876543210',
+            'email': 'buyer@example.com',
+            'address_line1': '123 Tech Park',
+            'city': 'Purnea',
+            'state': 'Bihar',
+            'pincode': '854301',
+            'address_type': 'home',
+            'is_default': True
+        }
+        create_resp = self.client.post(self.addresses_url, address_payload, format='json')
+        self.assertEqual(create_resp.status_code, status.HTTP_201_CREATED)
+        address_id = create_resp.data['id']
+
+        list_resp = self.client.get(self.addresses_url)
+        self.assertEqual(list_resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(list_resp.data['results']), 1)
+
+    def test_place_order_and_invoice_json(self):
+        self.client.force_authenticate(user=self.user)
+        self.client.post(self.add_item_url, {'product_id': self.product.id, 'quantity': 1}, format='json')
+
+        address = UserAddress.objects.create(
+            user=self.user,
+            full_name='Buyer User',
+            phone='9876543210',
+            email='buyer@example.com',
+            address_line1='123 Tech Park',
+            city='Purnea',
+            state='Bihar',
+            pincode='854301',
+            is_default=True
+        )
+
+        order_payload = {
+            'address_id': address.id,
+            'payment_method': 'cod'
+        }
+        order_resp = self.client.post(self.orders_url, order_payload, format='json')
+        self.assertEqual(order_resp.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(order_resp.data['success'])
+        order_number = order_resp.data['order']['order_number']
+        token = order_resp.data['order']['invoice_access_token']
+
+        invoice_url = reverse('api_order_invoice', kwargs={'order_number': order_number})
+        invoice_resp = self.client.get(f"{invoice_url}?token={token}")
+        self.assertEqual(invoice_resp.status_code, status.HTTP_200_OK)
+        self.assertTrue(invoice_resp.data['success'])
+        self.assertEqual(invoice_resp.data['customer']['full_name'], 'Buyer User')

@@ -21,6 +21,9 @@ api_v1_patterns = [
     path('auth/', include('apps.accounts.api_urls')),
     path('categories/', include('apps.categories.api_urls')),
     path('products/', include('apps.store.api_urls')),
+    path('', include('apps.cart.api_urls')),
+    path('coupons/', include('apps.coupons.api_urls')),
+    path('payments/', include('apps.payments.api_urls')),
 ]
 
 urlpatterns = [
