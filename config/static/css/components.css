@@ -1,0 +1,265 @@
+/* ==========================================
+   REUSABLE COMPONENTS
+   ========================================== */
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-primary);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xs);
+    padding: var(--space-12) var(--space-20);
+    border-radius: var(--radius-xl);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    border: none;
+    outline: none;
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.btn-secondary {
+    background-color: var(--color-accent);
+    color: var(--color-primary);
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+}
+
+.btn-outline:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+/* Cards */
+.card {
+    background-color: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-24);
+    box-shadow: var(--shadow-sm);
+}
+
+.card-hover:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary);
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-primary);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-2xs);
+    padding: var(--space-4) var(--space-8);
+    border-radius: var(--radius-full);
+}
+
+.badge-success {
+    background-color: var(--color-accent);
+    color: var(--color-success);
+}
+
+.badge-danger {
+    background-color: #FEF2F2;
+    color: var(--color-danger);
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: var(--space-16);
+}
+
+.form-label {
+    display: block;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-4);
+    font-size: var(--font-size-xs);
+}
+
+.form-input {
+    width: 100%;
+    padding: var(--space-12);
+    background-color: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xs);
+    transition: all var(--transition-fast);
+}
+
+.form-input:focus {
+    border-color: var(--color-primary);
+    background-color: var(--color-white);
+}
+
+/* Tables */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: var(--radius-2xl);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-xs);
+}
+
+.table th {
+    background-color: var(--color-background);
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    padding: var(--space-16);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.table td {
+    padding: var(--space-16);
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+}
+
+/* Navbar */
+.navbar {
+    width: 100%;
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+}
+
+/* Footer */
+.footer {
+    width: 100%;
+    background-color: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    padding: var(--space-32) 0;
+}
+
+/* Dropdown */
+.dropdown-menu {
+    position: absolute;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-dropdown);
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-overlay);
+    backdrop-filter: blur(4px);
+    padding: var(--space-16);
+}
+
+.modal-content {
+    background-color: var(--color-surface);
+    width: 100%;
+    max-width: var(--container-md);
+    border-radius: var(--radius-3xl);
+    padding: var(--space-32);
+    box-shadow: var(--shadow-xl);
+}
+
+/* Alert */
+.alert {
+    padding: var(--space-16);
+    border-radius: var(--radius-xl);
+    border: 1px solid transparent;
+    font-size: var(--font-size-xs);
+}
+
+.alert-success {
+    background-color: var(--color-accent);
+    border-color: var(--color-border);
+    color: var(--color-success);
+}
+
+/* Toast */
+.toast {
+    position: fixed;
+    bottom: var(--space-24);
+    right: var(--space-24);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-16) var(--space-24);
+    z-index: var(--z-tooltip);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+}
+
+/* Product Card */
+.product-card {
+    background-color: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-16);
+    transition: all var(--transition-normal);
+}
+
+.product-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* Category Card */
+.category-card {
+    background-color: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-16);
+    text-align: center;
+}
+
+/* Search Box */
+.search-box {
+    display: flex;
+    align-items: center;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+}

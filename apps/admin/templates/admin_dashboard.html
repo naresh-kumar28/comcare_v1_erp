@@ -1,0 +1,288 @@
+{% extends 'admin_base.html' %}
+{% load indian_numbers humanize %}
+
+{% block title %}Dashboard Overview — ComCare Admin Panel{% endblock %}
+{% block header_title %}Admin Dashboard Overview{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    
+    <!-- Top KPI Analytics Widgets -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Widget 1: Revenue -->
+        <a href="{% url 'admin_orders' %}" class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-2 hover:shadow-md hover:border-red-300 transition block group">
+            <div class="flex justify-between items-center text-gray-400">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 group-hover:text-[var(--color-primary)] transition">Total Revenue</span>
+                <div class="w-9 h-9 rounded-xl bg-red-50 text-[var(--color-primary)] flex items-center justify-center group-hover:bg-[var(--color-primary)] group-hover:text-white transition">
+                    <i data-lucide="indian-rupee" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <div class="text-2xl font-extrabold text-gray-900 font-outfit">₹{{ total_revenue|indian_format }}</div>
+            <div class="text-xs text-emerald-600 font-bold flex items-center gap-1">
+                <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Total Lifetime Revenue
+            </div>
+        </a>
+
+        <!-- Widget 2: Orders -->
+        <a href="{% url 'admin_orders' %}" class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-2 hover:shadow-md hover:border-emerald-300 transition block group">
+            <div class="flex justify-between items-center text-gray-400">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 group-hover:text-emerald-600 transition">Orders Processed</span>
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition">
+                    <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <div class="text-2xl font-extrabold text-gray-900 font-outfit">{{ total_orders|intcomma }} Orders</div>
+            <div class="text-xs text-emerald-600 font-bold flex items-center gap-1">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> {{ pending_orders }} Pending Dispatch
+            </div>
+        </a>
+
+        <!-- Widget 3: Low Stock Alerts -->
+        <a href="{% url 'admin_inventory' %}?filter=lowstock" class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-2 hover:shadow-md hover:border-amber-300 transition block group">
+            <div class="flex justify-between items-center text-gray-400">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 group-hover:text-amber-600 transition">Low Stock Items</span>
+                <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <div class="text-2xl font-extrabold text-amber-600 font-outfit">{{ total_low_or_out_stock }} Products</div>
+            <div class="text-xs text-amber-700 font-bold">
+                {% if out_of_stock_count > 0 %}{{ out_of_stock_count }} Out of Stock{% else %}Needs stock replenishment{% endif %}
+            </div>
+        </a>
+
+        <!-- Widget 4: Repair Leads -->
+        <a href="{% url 'admin_services' %}" class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-2 hover:shadow-md hover:border-purple-300 transition block group">
+            <div class="flex justify-between items-center text-gray-400">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 group-hover:text-purple-600 transition">Service Leads</span>
+                <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition">
+                    <i data-lucide="wrench" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <div class="text-2xl font-extrabold text-gray-900 font-outfit">{{ total_service_leads }} Leads</div>
+            <div class="text-xs text-purple-600 font-bold">{{ pending_service_leads }} New calls pending</div>
+        </a>
+
+    </div>
+
+    <!-- Charts & Low Stock Alerts Split Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Sales Overview Chart Visualizer -->
+        <div class="lg:col-span-8 bg-white p-6 sm:p-8 rounded-3xl border border-gray-200 shadow-sm space-y-6">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-4">
+                <div>
+                    <h3 class="font-bold text-gray-900 text-base font-outfit">Monthly Revenue Analytics</h3>
+                    <p class="text-xs text-gray-400">Sales performance across Store Orders & Services</p>
+                </div>
+                <span class="text-xs font-bold bg-red-50 text-[var(--color-primary)] px-3 py-1 rounded-full">{{ current_year }} YTD</span>
+            </div>
+
+            <!-- Interactive Chart.js Canvas -->
+            <div class="h-64 relative w-full pt-2">
+                <canvas id="revenueChart" class="w-full h-full"></canvas>
+            </div>
+        </div>
+
+        <!-- Low Stock Alerts Panel -->
+        <div class="lg:col-span-4 bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-4">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <h3 class="font-bold text-gray-900 text-base font-outfit flex items-center gap-2">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i> Low Stock Panel
+                </h3>
+                <a href="{% url 'admin_inventory' %}" class="text-xs font-bold text-[var(--color-primary)] hover:underline">Manage</a>
+            </div>
+
+            <div class="space-y-3">
+                {% for prod in low_stock_products %}
+                    {% if prod.stock_qty <= 0 %}
+                        <div class="p-3.5 bg-red-50 border border-red-200 rounded-2xl flex items-center justify-between text-xs">
+                            <div>
+                                <div class="font-bold text-gray-900 truncate max-w-[150px]">{{ prod.title }}</div>
+                                <div class="text-[10px] text-red-800 font-semibold font-mono">SKU: {{ prod.sku }}</div>
+                            </div>
+                            <span class="bg-red-600 text-white font-bold px-2.5 py-0.5 rounded-full text-[10px] whitespace-nowrap">
+                                OUT OF STOCK
+                            </span>
+                        </div>
+                    {% else %}
+                        <div class="p-3.5 bg-amber-50/60 border border-amber-200 rounded-2xl flex items-center justify-between text-xs">
+                            <div>
+                                <div class="font-bold text-gray-900 truncate max-w-[150px]">{{ prod.title }}</div>
+                                <div class="text-[10px] text-amber-800 font-semibold font-mono">SKU: {{ prod.sku }}</div>
+                            </div>
+                            <span class="bg-amber-500 text-white font-bold px-2.5 py-0.5 rounded-full text-[10px] whitespace-nowrap">
+                                {{ prod.stock_qty }} Left
+                            </span>
+                        </div>
+                    {% endif %}
+                {% empty %}
+                    <div class="p-6 text-center text-xs text-gray-400 font-medium">
+                        All products are well stocked! 🎉
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Recent Service Leads & Top Selling Products -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Recent Repair Leads Table -->
+        <div class="lg:col-span-6 bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-4">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <h3 class="font-bold text-gray-900 text-base font-outfit">Recent Repair & CCTV Leads</h3>
+                <a href="{% url 'admin_services' %}" class="text-xs font-bold text-[var(--color-primary)] hover:underline">View All</a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="text-gray-400 border-b border-gray-100">
+                            <th class="py-2">Client</th>
+                            <th class="py-2">Service</th>
+                            <th class="py-2">Status</th>
+                            <th class="py-2 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-gray-700">
+                        {% for lead in recent_service_leads %}
+                        <tr>
+                            <td class="py-3">
+                                <div class="font-bold text-gray-900">{{ lead.full_name }}</div>
+                                <div class="text-[10px] text-gray-400">{{ lead.phone }}</div>
+                            </td>
+                            <td class="py-3 font-semibold">{{ lead.service_category }}</td>
+                            <td class="py-3">
+                                <span class="{% if lead.status == 'pending' %}bg-amber-100 text-amber-800{% elif lead.status == 'completed' %}bg-emerald-100 text-emerald-800{% else %}bg-red-100 text-[var(--color-primary)]{% endif %} font-bold px-2 py-0.5 rounded-full text-[10px] whitespace-nowrap">
+                                    {{ lead.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="py-3 text-right">
+                                <a href="tel:{{ lead.phone }}" class="text-[var(--color-primary)] font-bold hover:underline">Call</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="py-6 text-center text-gray-400 text-xs">No service booking leads submitted yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Top Catalog Products -->
+        <div class="lg:col-span-6 bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-4">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <h3 class="font-bold text-gray-900 text-base font-outfit">Top Catalog Products</h3>
+                <a href="{% url 'admin_products' %}" class="text-xs font-bold text-[var(--color-primary)] hover:underline">Manage Catalog</a>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                {% for prod in top_selling_products %}
+                <div class="flex items-center justify-between p-3 bg-[var(--color-background)] rounded-2xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-red-100 text-[var(--color-primary)] flex items-center justify-center font-bold shrink-0">
+                            {% if prod.image %}
+                                <img src="{{ prod.image.url }}" alt="{{ prod.title }}" class="w-full h-full object-contain p-1 rounded-xl">
+                            {% else %}
+                                <i data-lucide="package" class="w-4 h-4"></i>
+                            {% endif %}
+                        </div>
+                        <div class="min-w-0">
+                            <div class="font-bold text-gray-900 truncate max-w-[180px]" title="{{ prod.title }}">{{ prod.title }}</div>
+                            <div class="text-gray-400 text-[10px]">{{ prod.category.name|default:"General" }}</div>
+                        </div>
+                    </div>
+                    <div class="text-right whitespace-nowrap">
+                        <div class="font-extrabold text-gray-900 font-outfit">₹{{ prod.selling_price|indian_format }}</div>
+                        <div class="text-[10px] text-emerald-600 font-semibold">
+                            {% if prod.total_sold %}{{ prod.total_sold }} Sold{% else %}{{ prod.stock_qty }} In Stock{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="p-6 text-center text-gray-400 text-xs">No catalog products available.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById('revenueChart');
+    if (!ctx) return;
+
+    const labels = {{ chart_labels_json|safe }};
+    const dataPoints = {{ chart_amounts_json|safe }};
+
+    const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 250);
+    gradient.addColorStop(0, 'rgba(37, 99, 235, 0.35)');
+    gradient.addColorStop(1, 'rgba(37, 99, 235, 0.0)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: dataPoints,
+                borderColor: '#2563eb',
+                borderWidth: 3,
+                backgroundColor: gradient,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#2563eb',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0f172a',
+                    titleFont: { size: 12, weight: 'bold' },
+                    bodyFont: { size: 12, weight: 'bold' },
+                    padding: 12,
+                    cornerRadius: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return ' Revenue: ₹' + context.parsed.y.toLocaleString('en-IN');
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 11, weight: 'bold' }, color: '#94a3b8' }
+                },
+                y: {
+                    border: { dash: [5, 5] },
+                    grid: { color: '#f1f5f9' },
+                    ticks: {
+                        font: { size: 11, weight: 'bold' },
+                        color: '#94a3b8',
+                        callback: function(value) {
+                            return '₹' + (value >= 1000 ? (value / 1000) + 'k' : value);
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Orders & Shipments — ComCare Admin Panel{% endblock %}
+{% block header_title %}Orders & Dispatch Control{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    
+    <!-- Top Action Bar, Live Search & Filter Pills -->
+    <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4" x-data="{ currentFilter: '{{ current_filter|default:'all' }}' }">
+        
+        <!-- Status Pill Filters (HTMX Async + Alpine State) -->
+        <div class="flex flex-wrap gap-2 text-xs font-bold">
+            <button hx-get="{% url 'admin_orders' %}?filter=all"
+                    hx-target="#orders-table-body"
+                    hx-push-url="true"
+                    @click="currentFilter = 'all'"
+                    class="px-4 py-2 rounded-xl transition duration-200 whitespace-nowrap"
+                    :class="currentFilter === 'all' || !currentFilter ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                All Orders ({{ total_orders_count }})
+            </button>
+
+            <button hx-get="{% url 'admin_orders' %}?filter=pending"
+                    hx-target="#orders-table-body"
+                    hx-push-url="true"
+                    @click="currentFilter = 'pending'"
+                    class="px-4 py-2 rounded-xl transition duration-200 whitespace-nowrap"
+                    :class="currentFilter === 'pending' ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                Pending ({{ pending_count }})
+            </button>
+
+            <button hx-get="{% url 'admin_orders' %}?filter=processing"
+                    hx-target="#orders-table-body"
+                    hx-push-url="true"
+                    @click="currentFilter = 'processing'"
+                    class="px-4 py-2 rounded-xl transition duration-200 whitespace-nowrap"
+                    :class="currentFilter === 'processing' ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                Processing ({{ processing_count }})
+            </button>
+
+            <button hx-get="{% url 'admin_orders' %}?filter=shipped"
+                    hx-target="#orders-table-body"
+                    hx-push-url="true"
+                    @click="currentFilter = 'shipped'"
+                    class="px-4 py-2 rounded-xl transition duration-200 whitespace-nowrap"
+                    :class="currentFilter === 'shipped' ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                Shipped ({{ shipped_count }})
+            </button>
+
+            <button hx-get="{% url 'admin_orders' %}?filter=delivered"
+                    hx-target="#orders-table-body"
+                    hx-push-url="true"
+                    @click="currentFilter = 'delivered'"
+                    class="px-4 py-2 rounded-xl transition duration-200 whitespace-nowrap"
+                    :class="currentFilter === 'delivered' ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                Delivered ({{ delivered_count }})
+            </button>
+
+            <button hx-get="{% url 'admin_orders' %}?filter=cancelled"
+                    hx-target="#orders-table-body"
+                    hx-push-url="true"
+                    @click="currentFilter = 'cancelled'"
+                    class="px-4 py-2 rounded-xl transition duration-200 whitespace-nowrap"
+                    :class="currentFilter === 'cancelled' ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                Cancelled ({{ cancelled_count }})
+            </button>
+        </div>
+
+        <!-- Live Search Input (HTMX) -->
+        <div class="relative min-w-[260px]">
+            <input type="text"
+                   name="q"
+                   value="{{ q }}"
+                   placeholder="Search Order ID, Customer name, Phone..."
+                   hx-get="{% url 'admin_orders' %}"
+                   hx-trigger="keyup changed delay:350ms, search"
+                   hx-target="#orders-table-body"
+                   class="w-full pl-9 pr-4 py-2.5 bg-[var(--color-background)] border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-[var(--color-primary)] focus:bg-white transition">
+            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-3"></i>
+        </div>
+
+    </div>
+
+    <!-- Orders Table -->
+    <div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider border-b border-gray-200">
+                    <tr>
+                        <th class="p-4">Order ID & Date</th>
+                        <th class="p-4">Customer Details</th>
+                        <th class="p-4">Items Included</th>
+                        <th class="p-4">Amount & Payment</th>
+                        <th class="p-4">Order Status</th>
+                        <th class="p-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="orders-table-body" class="divide-y divide-gray-100 text-gray-700">
+                    {% include 'partials/admin_order_table_body.html' %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        {% if orders.has_other_pages %}
+        <div class="p-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+            <div>
+                Showing Page <span class="font-bold text-gray-900">{{ orders.number }}</span> of <span class="font-bold text-gray-900">{{ orders.paginator.num_pages }}</span>
+            </div>
+            <div class="flex items-center gap-2 font-bold">
+                {% if orders.has_previous %}
+                    <button hx-get="?page={{ orders.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if current_filter %}&filter={{ current_filter }}{% endif %}"
+                            hx-target="#orders-table-body"
+                            hx-push-url="true"
+                            class="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition">
+                        &laquo; Previous
+                    </button>
+                {% endif %}
+                
+                {% if orders.has_next %}
+                    <button hx-get="?page={{ orders.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if current_filter %}&filter={{ current_filter }}{% endif %}"
+                            hx-target="#orders-table-body"
+                            hx-push-url="true"
+                            class="px-3 py-1.5 rounded-xl bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition">
+                        Next &raquo;
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block modal %}
+<!-- Dynamic Modal Container for Order Detail (Root Body Level for 100% Fullscreen Viewport Overlay) -->
+<div x-show="showOrderModal" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-gray-900/70 backdrop-blur-md">
+    <div id="order-modal-container" class="w-full max-w-2xl">
+        <!-- HTMX injects admin_order_detail.html here -->
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% if addresses %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {% for addr in addresses %}
+        {% include 'partials/address_card.html' with addr=addr %}
+    {% endfor %}
+</div>
+{% else %}
+<!-- Empty State -->
+<div class="bg-white p-12 rounded-3xl border border-gray-200 shadow-sm text-center space-y-4">
+    <div class="w-16 h-16 rounded-full bg-red-50 text-[var(--color-primary)] flex items-center justify-center mx-auto shadow-inner">
+        <i data-lucide="map-pin" class="w-8 h-8 text-[var(--color-primary)]"></i>
+    </div>
+    <div class="space-y-1">
+        <h3 class="font-extrabold text-gray-900 text-lg font-outfit">No Saved Addresses</h3>
+        <p class="text-xs text-gray-400 max-w-sm mx-auto">Please add a shipping address so that we can deliver products to your doorstep.</p>
+    </div>
+    <button type="button" @click="openAddAddressModal()" class="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-6 py-3 rounded-xl font-bold text-xs shadow-md shadow-blue-500/20 transition">
+        Add Address Now
+    </button>
+</div>
+{% endif %}

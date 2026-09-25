@@ -1,0 +1,15 @@
+{% for product in products %}
+    {% include 'partials/admin_product_row.html' %}
+{% empty %}
+    <tr>
+        <td colspan="6" class="p-12 text-center text-gray-500">
+            <div class="max-w-xs mx-auto space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-gray-100 text-gray-400 flex items-center justify-center mx-auto">
+                    <i data-lucide="package-x" class="w-6 h-6"></i>
+                </div>
+                <div class="font-bold text-gray-900 text-sm">No Products Found</div>
+                <p class="text-xs text-gray-400">No products matched your search filter or criteria.</p>
+            </div>
+        </td>
+    </tr>
+{% endfor %}

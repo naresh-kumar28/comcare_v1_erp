@@ -1,0 +1,102 @@
+<tr id="product-row-{{ product.id }}" class="hover:bg-red-50/20 transition group">
+    <!-- Product Info & SKU -->
+    <td class="p-4">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center shrink-0">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="w-full h-full object-contain p-1">
+                {% else %}
+                    <i data-lucide="package" class="w-5 h-5 text-gray-400"></i>
+                {% endif %}
+            </div>
+            <div class="min-w-0">
+                <div class="font-bold text-gray-900 truncate max-w-xs" title="{{ product.title }}">{{ product.title }}</div>
+                <div class="text-[10px] text-gray-400 font-mono">SKU: {{ product.sku }}{% if product.barcode %} • Barcode: {{ product.barcode }}{% endif %}</div>
+            </div>
+        </div>
+    </td>
+
+    <!-- Category & Brand -->
+    <td class="p-4">
+        <div class="font-bold text-gray-900">{{ product.category.name }}</div>
+        <div class="text-[10px] text-gray-500 font-semibold">Brand: {{ product.brand }}</div>
+    </td>
+
+    <!-- Price & Discount -->
+    <td class="p-4">
+        <div class="font-extrabold text-gray-900 font-outfit text-sm">₹{{ product.selling_price }}</div>
+        {% if product.original_price and product.original_price > product.selling_price %}
+            <div class="text-[10px] text-gray-400 line-through">₹{{ product.original_price }}</div>
+        {% endif %}
+    </td>
+
+    <!-- Stock Levels -->
+    <td class="p-4">
+        {% if product.stock_qty > 5 %}
+            <div class="font-bold text-emerald-600 text-xs flex items-center gap-1 whitespace-nowrap">
+                <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> {{ product.stock_qty }} Units
+            </div>
+        {% elif product.stock_qty > 0 %}
+            <div class="font-bold text-amber-600 text-xs flex items-center gap-1 whitespace-nowrap">
+                <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> Low: {{ product.stock_qty }} Left
+            </div>
+        {% else %}
+            <div class="font-bold text-red-600 text-xs flex items-center gap-1 whitespace-nowrap">
+                <i data-lucide="x-circle" class="w-3.5 h-3.5"></i> Out of Stock
+            </div>
+        {% endif %}
+    </td>
+
+    <!-- Interactive HTMX Flag Toggles -->
+    <td class="p-4 whitespace-nowrap">
+        <div class="flex flex-wrap gap-1 items-center">
+            <!-- Active / Inactive Toggle -->
+            <button hx-post="{% url 'admin_product_toggle_flag' product.id 'active' %}"
+                    hx-target="#product-row-{{ product.id }}"
+                    hx-swap="outerHTML"
+                    class="px-2 py-0.5 rounded-full text-[10px] font-bold transition flex items-center gap-1 {% if product.is_active %}bg-emerald-50 text-emerald-700 hover:bg-emerald-100{% else %}bg-gray-100 text-gray-500 hover:bg-gray-200{% endif %}"
+                    title="Click to toggle Active status">
+                <span class="w-1.5 h-1.5 rounded-full {% if product.is_active %}bg-emerald-500{% else %}bg-gray-400{% endif %}"></span>
+                {% if product.is_active %}Active{% else %}Inactive{% endif %}
+            </button>
+
+            <!-- Featured Toggle -->
+            <button hx-post="{% url 'admin_product_toggle_flag' product.id 'featured' %}"
+                    hx-target="#product-row-{{ product.id }}"
+                    hx-swap="outerHTML"
+                    class="px-2 py-0.5 rounded-full text-[10px] font-bold transition {% if product.is_featured %}bg-red-50 text-[var(--color-primary)] hover:bg-red-100{% else %}bg-gray-100 text-gray-400 hover:bg-gray-200{% endif %}"
+                    title="Click to toggle Featured status">
+                Featured
+            </button>
+
+            <!-- Best Seller Toggle -->
+            {% if product.is_best_seller %}
+            <button hx-post="{% url 'admin_product_toggle_flag' product.id 'best_seller' %}"
+                    hx-target="#product-row-{{ product.id }}"
+                    hx-swap="outerHTML"
+                    class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 hover:bg-amber-100 transition">
+                Best Seller
+            </button>
+            {% endif %}
+        </div>
+    </td>
+
+    <!-- Row Actions -->
+    <td class="p-4 text-right whitespace-nowrap space-x-2">
+        <button hx-get="{% url 'admin_product_edit_form' product.id %}"
+                hx-target="#product-modal-container"
+                hx-swap="innerHTML"
+                @click="showProductModal = true"
+                class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-xs transition inline-flex items-center gap-1">
+            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Edit
+        </button>
+
+        <button hx-post="{% url 'admin_product_delete' product.id %}"
+                hx-confirm="Are you sure you want to delete product '{{ product.title|escapejs }}'?"
+                hx-target="#product-row-{{ product.id }}"
+                hx-swap="outerHTML swap:0.3s"
+                class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold text-xs transition inline-flex items-center gap-1">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete
+        </button>
+    </td>
+</tr>

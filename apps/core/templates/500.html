@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}500 — Server Error | ComCare{% endblock %}
+
+{% block content %}
+<div class="py-20 bg-[var(--color-background)] flex items-center justify-center min-h-[calc(100vh-250px)]">
+    <div class="max-w-md mx-auto px-4 text-center space-y-6">
+        <div class="w-20 h-20 rounded-3xl bg-red-100 text-red-600 flex items-center justify-center mx-auto shadow-md">
+            <i data-lucide="server-off" class="w-10 h-10"></i>
+        </div>
+        <div class="space-y-2">
+            <h1 class="text-4xl font-extrabold text-gray-900 font-outfit">500 — Server Error</h1>
+            <p class="text-xs text-gray-500">Something went wrong on our server. Please try refreshing or come back later.</p>
+        </div>
+        <div class="pt-2 flex justify-center gap-3">
+            <a href="{% url 'home' %}" class="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-6 py-3 rounded-xl font-bold text-xs shadow-md transition">
+                Return to Homepage
+            </a>
+            <a href="tel:7782933700" class="bg-white border border-gray-300 text-gray-800 px-6 py-3 rounded-xl font-bold text-xs transition">
+                Contact Support
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

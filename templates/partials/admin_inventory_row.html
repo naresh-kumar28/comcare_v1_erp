@@ -1,0 +1,46 @@
+<tr id="inventory-row-{{ product.id }}" class="hover:bg-red-50/30 transition {% if product.stock_qty <= 0 %}bg-red-50/20{% elif product.stock_qty <= 5 %}bg-amber-50/20{% endif %}">
+    <td class="p-3">
+        <div class="font-bold text-gray-900 text-xs">{{ product.title }}</div>
+        <div class="text-[10px] text-gray-400 font-mono">SKU: {{ product.sku }} • {{ product.category.name|default:"Uncategorized" }}</div>
+    </td>
+    <td class="p-3 font-extrabold font-mono text-sm text-gray-900">
+        {{ product.stock_qty }}
+    </td>
+    <td class="p-3">
+        {% if product.stock_qty <= 0 %}
+            <span class="bg-red-50 text-red-600 border border-red-200 px-2.5 py-1 rounded-full font-bold text-[10px] inline-flex items-center gap-1 whitespace-nowrap">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span> Out of Stock
+            </span>
+        {% elif product.stock_qty <= 5 %}
+            <span class="bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-full font-bold text-[10px] inline-flex items-center gap-1 whitespace-nowrap">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span> Low Stock ({{ product.stock_qty }})
+            </span>
+        {% else %}
+            <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-bold text-[10px] whitespace-nowrap">
+                In Stock
+            </span>
+        {% endif %}
+    </td>
+    <td class="p-3 font-semibold text-gray-800 font-mono">
+        ₹{{ product.selling_price }}
+    </td>
+    <td class="p-3 text-right">
+        <form hx-post="{% url 'admin_inventory_update_stock' product.id %}"
+              hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+              hx-target="#inventory-row-{{ product.id }}"
+              hx-swap="outerHTML"
+              class="inline-flex items-center gap-2">
+            <input type="number"
+                   name="stock_qty"
+                   value="{{ product.stock_qty }}"
+                   min="0"
+                   required
+                   class="w-20 p-1.5 bg-white border border-gray-200 rounded-xl font-bold font-mono text-center text-xs focus:outline-none focus:border-[var(--color-primary)]">
+            <button type="submit"
+                    class="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow-xs transition">
+                Update
+            </button>
+        </form>
+    </td>
+</tr>
+

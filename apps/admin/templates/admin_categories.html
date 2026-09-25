@@ -1,0 +1,57 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Categories & Taxonomy — ComCare Admin Panel{% endblock %}
+{% block header_title %}Category & Brand Taxonomy{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    
+    <!-- Header Card -->
+    <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm flex justify-between items-center">
+        <div>
+            <h2 class="text-base font-bold text-gray-900 font-outfit flex items-center gap-2">
+                Product Categories
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-red-50 text-[var(--color-primary)] border border-red-100">
+                    {{ categories_count }} Categories
+                </span>
+            </h2>
+            <p class="text-xs text-gray-500">Organize store catalog hierarchy and product taxonomy</p>
+        </div>
+        
+        <button hx-get="{% url 'admin_category_get_form' %}"
+                hx-target="#category-modal-container"
+                hx-swap="innerHTML"
+                @click="showCatModal = true"
+                class="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i> Add Category
+        </button>
+    </div>
+
+    <!-- Category Grid Container -->
+    <div id="categories-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for category in categories %}
+            {% include 'partials/admin_category_card.html' %}
+        {% empty %}
+            <div class="col-span-full bg-white p-12 rounded-3xl border border-gray-200 shadow-sm text-center text-gray-500">
+                <div class="max-w-xs mx-auto space-y-3">
+                    <div class="w-12 h-12 rounded-2xl bg-red-50 text-[var(--color-primary)] flex items-center justify-center mx-auto">
+                        <i data-lucide="layers" class="w-6 h-6"></i>
+                    </div>
+                    <div class="font-bold text-gray-900 text-sm">No Categories Yet</div>
+                    <p class="text-xs text-gray-400">Click 'Add Category' above to create your first product category.</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block modal %}
+<!-- Dynamic Modal Container for Add/Edit Category (Root Body Level for 100% Fullscreen Viewport Overlay) -->
+<div x-show="showCatModal" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-gray-900/70 backdrop-blur-md">
+    <div id="category-modal-container" class="w-full max-w-md">
+        {% include 'partials/admin_category_form.html' with category=None %}
+    </div>
+</div>
+{% endblock %}

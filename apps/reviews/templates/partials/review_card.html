@@ -1,0 +1,50 @@
+<div id="review-card-{{ review.id }}" class="bg-[var(--color-background)] p-5 sm:p-6 rounded-2xl border border-gray-200/80 space-y-3">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-3">
+            {% if review.user.profile_picture %}
+                <img src="{{ review.user.profile_picture.url }}" alt="{{ review.user.first_name }}" class="w-9 h-9 rounded-full object-cover border border-gray-200 shrink-0" />
+            {% else %}
+                <div class="w-9 h-9 rounded-full bg-red-100 text-[var(--color-primary)] font-bold text-xs flex items-center justify-center shrink-0">
+                    {{ review.user.first_name|slice:":1"|upper }}{{ review.user.last_name|slice:":1"|upper|default:review.user.phone_number|slice:":2" }}
+                </div>
+            {% endif %}
+            <div>
+                <div class="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                    <span>{{ review.user.first_name }} {{ review.user.last_name }}</span>
+                    {% if review.is_verified_purchase %}
+                    <span class="inline-flex items-center gap-0.5 text-[9px] text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full font-bold">
+                        <i data-lucide="shield-check" class="w-2.5 h-2.5"></i> Verified Buyer
+                    </span>
+                    {% endif %}
+                </div>
+                <span class="text-[10px] text-gray-400">Reviewed {{ review.created_at|timesince }} ago</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-0.5 text-amber-500">
+                {% for i in "12345" %}
+                    <i data-lucide="star" class="w-3.5 h-3.5 {% if forloop.counter <= review.rating %}fill-current{% else %}text-gray-300{% endif %}"></i>
+                {% endfor %}
+            </div>
+            {% if request.user == review.user %}
+            <div class="flex items-center gap-2 border-l border-gray-200 pl-3">
+                <button type="button"
+                        @click="selectedRating = {{ review.rating }}; reviewTitle = '{{ review.title|escapejs }}'; reviewComment = '{{ review.comment|escapejs }}'; showReviewModal = true;"
+                        class="text-gray-400 hover:text-[var(--color-primary)] transition" title="Edit Review">
+                    <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                </button>
+                <button type="button"
+                        hx-post="{% url 'delete_review' review.id %}"
+                        hx-target="#rating-summary-block"
+                        hx-swap="outerHTML"
+                        hx-confirm="Are you sure you want to delete your review?"
+                        class="text-gray-400 hover:text-red-600 transition" title="Delete Review">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <h4 class="text-xs sm:text-sm font-bold text-gray-900">{{ review.title }}</h4>
+    <p class="text-xs text-gray-600 leading-relaxed">{{ review.comment }}</p>
+</div>

@@ -1,0 +1,88 @@
+{% for order in orders %}
+<!-- Order Card -->
+<div class="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-sm space-y-6"
+     {% if forloop.last and orders_page.has_next %}
+        hx-get="{% url 'account_orders' %}?page={{ orders_page.next_page_number }}"
+        hx-trigger="revealed"
+        hx-swap="afterend"
+     {% endif %}>
+    
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <span class="font-bold text-gray-900 text-sm font-outfit">Order #{{ order.order_number }}</span>
+                <span class="{{ order.status_class }} text-xs font-bold px-3 py-0.5 rounded-full border">
+                    {{ order.status_display }}
+                </span>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">
+                Placed on {{ order.created_at|date:"d M Y" }} • Payment: {{ order.payment_method_display }} ({{ order.payment_status_display }})
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            {% if order.can_cancel %}
+            <button @click="showCancelModal = true; selectedOrderId = {{ order.id }}; selectedOrderNumber = '{{ order.order_number }}'" class="px-3.5 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold transition">
+                Cancel Order
+            </button>
+            {% endif %}
+
+            {% if order.can_return %}
+            <button @click="showReturnModal = true; selectedOrderNumber = '{{ order.order_number }}'" class="px-3.5 py-2 rounded-xl border border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-red-50 text-xs font-bold transition">
+                Request Return / Replacement
+            </button>
+            {% endif %}
+
+            {% if order.order_status == 'delivered' or order.can_return %}
+            <a href="{% url 'order_invoice' order.id %}" target="_blank" class="px-3.5 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-[var(--color-primary)] text-xs font-bold transition inline-flex items-center gap-1.5">
+                <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Tax Invoice
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Items Row -->
+    <div class="space-y-3">
+        {% for item in order.items %}
+        <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center gap-3">
+                {% if item.image_url %}
+                <div class="w-12 h-12 rounded-xl bg-white border border-gray-200 flex items-center justify-center shrink-0 overflow-hidden shadow-xs">
+                    <img src="{{ item.image_url }}" alt="{{ item.title }}" class="w-full h-full object-cover">
+                </div>
+                {% else %}
+                <div class="w-12 h-12 rounded-xl bg-red-100/50 flex items-center justify-center text-[var(--color-primary)] shrink-0">
+                    <i data-lucide="package" class="w-6 h-6"></i>
+                </div>
+                {% endif %}
+                <div>
+                    <div class="font-bold text-gray-900">{{ item.title }}</div>
+                    <div class="text-gray-500">Qty: {{ item.quantity }} • Price: ₹{{ item.unit_price }}</div>
+                </div>
+            </div>
+            <span class="font-bold text-gray-900 font-outfit">₹{{ item.total_price }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Footer Summary -->
+    <div class="flex justify-between items-center border-t border-gray-100 pt-4 text-xs">
+        <span class="text-gray-500">Delivering to: <strong class="text-gray-800">{{ order.address_summary }}</strong></span>
+        <span class="font-extrabold text-lg text-[var(--color-primary)] font-outfit">Total: ₹{{ order.grand_total }}</span>
+    </div>
+</div>
+{% empty %}
+    {% if orders_page.number == 1 %}
+    <!-- Empty State -->
+    <div class="bg-white rounded-3xl border border-gray-200 p-12 text-center shadow-sm space-y-4">
+        <div class="w-16 h-16 rounded-2xl bg-red-50 text-[var(--color-primary)] flex items-center justify-center mx-auto">
+            <i data-lucide="shopping-bag" class="w-8 h-8"></i>
+        </div>
+        <h3 class="font-extrabold text-gray-900 text-xl font-outfit">No Orders Placed Yet</h3>
+        <p class="text-xs text-gray-500 max-w-sm mx-auto">You haven't placed any orders yet. Explore our IT products and place your first order!</p>
+        <a href="{% url 'shop' %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[var(--color-primary)] text-white text-xs font-bold shadow-md hover:bg-[var(--color-primary-hover)] transition">
+            <i data-lucide="shopping-cart" class="w-4 h-4"></i> Explore Products
+        </a>
+    </div>
+    {% endif %}
+{% endfor %}

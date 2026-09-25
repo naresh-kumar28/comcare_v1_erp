@@ -1,0 +1,140 @@
+/* ==========================================
+   UTILITY CLASSES
+   ========================================== */
+
+/* AlpineJS x-cloak utility (keeps elements hidden until Alpine loads) */
+[x-cloak] {
+    display: none !important;
+}
+
+/* Hide scrollbar utility class (for all browsers) */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* Flexbox Layout Helpers */
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Centralized Text Colors */
+.text-primary {
+    color: var(--color-text-primary);
+}
+
+.text-secondary {
+    color: var(--color-text-secondary);
+}
+
+.text-muted {
+    color: var(--color-text-muted);
+}
+
+.text-brand-primary {
+    color: var(--color-primary);
+}
+
+/* Centralized Backgrounds */
+.bg-brand-primary {
+    background-color: var(--color-primary);
+}
+
+.bg-background {
+    background-color: var(--color-background);
+}
+
+.bg-surface {
+    background-color: var(--color-surface);
+}
+
+/* Centralized Rounded Corners */
+.rounded-sm {
+    border-radius: var(--radius-sm);
+}
+
+.rounded {
+    border-radius: var(--radius-md);
+}
+
+.rounded-md {
+    border-radius: var(--radius-md);
+}
+
+.rounded-lg {
+    border-radius: var(--radius-lg);
+}
+
+.rounded-xl {
+    border-radius: var(--radius-xl);
+}
+
+.rounded-2xl {
+    border-radius: var(--radius-2xl);
+}
+
+.rounded-3xl {
+    border-radius: var(--radius-3xl);
+}
+
+.rounded-full {
+    border-radius: var(--radius-full);
+}
+
+/* Centralized Shadows */
+.shadow-sm {
+    box-shadow: var(--shadow-sm);
+}
+
+.shadow {
+    box-shadow: var(--shadow-md);
+}
+
+.shadow-md {
+    box-shadow: var(--shadow-md);
+}
+
+.shadow-lg {
+    box-shadow: var(--shadow-lg);
+}
+
+.shadow-xl {
+    box-shadow: var(--shadow-xl);
+}
+
+/* Layout Utilities */
+.hidden {
+    display: none;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Transition Utilities */
+.transition {
+    transition: all var(--transition-normal);
+}
+
+.transition-fast {
+    transition: all var(--transition-fast);
+}
+
+.transition-slow {
+    transition: all var(--transition-slow);
+}

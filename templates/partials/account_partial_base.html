@@ -1,0 +1,60 @@
+<div id="account-main-content" class="lg:col-span-9 space-y-6">
+    {% if messages %}
+        <div class="space-y-3">
+            {% for message in messages %}
+                <div class="p-4 rounded-2xl border text-xs font-semibold flex items-center justify-between {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-200{% elif message.tags == 'success' %}bg-emerald-50 text-emerald-700 border-emerald-200{% else %}bg-red-50 text-[var(--color-primary)] border-red-200{% endif %}">
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Skeleton Loader (Shown during HTMX tab loading) -->
+    <div id="account-skeleton-loader" class="htmx-indicator space-y-6">
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200 shadow-sm space-y-3 animate-pulse">
+            <div class="h-3.5 bg-red-100 rounded-full w-28"></div>
+            <div class="h-7 bg-gray-200 rounded-xl w-64"></div>
+            <div class="h-3 bg-gray-100 rounded-lg w-80"></div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-4 animate-pulse">
+                <div class="flex justify-between items-center">
+                    <div class="h-4 bg-gray-200 rounded-lg w-32"></div>
+                    <div class="h-4 bg-gray-100 rounded-md w-16"></div>
+                </div>
+                <div class="h-3 bg-gray-100 rounded-md w-full"></div>
+                <div class="h-3 bg-gray-100 rounded-md w-2/3"></div>
+                <div class="pt-3 border-t border-gray-100 flex justify-between">
+                    <div class="h-4 bg-gray-200 rounded-md w-16"></div>
+                    <div class="h-4 bg-gray-200 rounded-md w-20"></div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-4 animate-pulse">
+                <div class="flex justify-between items-center">
+                    <div class="h-4 bg-gray-200 rounded-lg w-32"></div>
+                    <div class="h-4 bg-gray-100 rounded-md w-16"></div>
+                </div>
+                <div class="h-3 bg-gray-100 rounded-md w-full"></div>
+                <div class="h-3 bg-gray-100 rounded-md w-2/3"></div>
+                <div class="pt-3 border-t border-gray-100 flex justify-between">
+                    <div class="h-4 bg-gray-200 rounded-md w-16"></div>
+                    <div class="h-4 bg-gray-200 rounded-md w-20"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Tab Content Wrapper -->
+    <div id="account-content-wrapper" class="space-y-6">
+        {% block account_content %}{% endblock %}
+    </div>
+
+    <!-- Page Modals (e.g. Cancel Order, Return Request, Addresses) -->
+    {% block modals %}{% endblock %}
+
+    <!-- OOB Update for Desktop Sidebar active tab -->
+    {% include 'partials/account_sidebar_nav.html' %}
+
+    <!-- OOB Update for Mobile Subnav active tab -->
+    {% include 'partials/account_mobile_subnav.html' %}
+</div>

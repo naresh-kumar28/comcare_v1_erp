@@ -1,0 +1,43 @@
+{% load store_extras %}
+<div id="rating-summary-block" hx-swap-oob="true" class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center bg-[var(--color-background)] p-6 sm:p-8 rounded-3xl border border-gray-200/80">
+    <!-- Average Rating Score Box -->
+    <div class="md:col-span-4 text-center md:border-r md:border-gray-200/60 pr-0 md:pr-8 space-y-2">
+        <div class="text-4xl sm:text-5xl font-extrabold text-gray-900 font-outfit">{{ product.rating|default:"0.0" }}</div>
+        <div class="flex justify-center items-center gap-1 text-amber-500">
+            {% for i in "12345" %}
+                <i data-lucide="star" class="w-5 h-5 {% if forloop.counter <= product.rating %}fill-current{% else %}text-gray-300{% endif %}"></i>
+            {% endfor %}
+        </div>
+        <p class="text-xs text-gray-500 font-semibold">Based on {{ product.reviews_count }} verified reviews</p>
+    </div>
+
+    <!-- Rating Progress Bars -->
+    <div class="md:col-span-5 space-y-2.5">
+        {% for star in "54321" %}
+        <div class="flex items-center gap-3 text-xs">
+            <span class="w-12 text-gray-500 font-bold">{{ star }} Star{{ star|pluralize }}</span>
+            <div class="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-full bg-amber-500 rounded-full" style="width: {{ rating_breakdown|get_item:star }}%"></div>
+            </div>
+            <span class="w-8 text-right text-gray-900 font-bold">{{ rating_breakdown|get_item:star }}%</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Write Review CTA -->
+    <div class="md:col-span-3 flex flex-col items-center justify-center md:pl-8 md:border-l md:border-gray-100/60">
+        <p class="text-xs text-gray-500 text-center mb-3">Share your thoughts with other customers</p>
+        {% if request.user.is_authenticated %}
+            <button @click="showReviewModal = true"
+                    class="w-full py-3 px-4 rounded-xl border border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-red-50 font-bold text-xs text-center transition flex items-center justify-center gap-2">
+                <i data-lucide="edit-3" class="w-4 h-4"></i>
+                {% if user_has_reviewed %}Edit Your Review{% else %}Write a Review{% endif %}
+            </button>
+        {% else %}
+            <a href="{% url 'login' %}?next={{ request.path }}"
+               class="w-full py-3 px-4 rounded-xl border border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-red-50 font-bold text-xs text-center transition flex items-center justify-center gap-2">
+                <i data-lucide="edit-3" class="w-4 h-4"></i> Write a Review
+            </a>
+        {% endif %}
+    </div>
+</div>

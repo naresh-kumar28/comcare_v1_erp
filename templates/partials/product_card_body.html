@@ -1,0 +1,132 @@
+<div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full group relative" x-data="{ inWishlist: {% if user_wishlist_ids and card_id in user_wishlist_ids %}true{% else %}false{% endif %} }">
+    
+    <!-- Badges Row -->
+    <div class="absolute top-6 left-6 right-6 flex items-center justify-between z-10 pointer-events-none">
+        <div class="flex items-center gap-1.5 flex-wrap">
+            {% if card_is_sale %}
+            <span class="bg-[var(--color-success)] text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
+                Save {{ card_discount_percent }}%
+            </span>
+            {% endif %}
+            
+            {% if card_stock_status == 'in_stock' %}
+            <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                In Stock
+            </span>
+            {% elif card_stock_status == 'low_stock' %}
+            <span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Low Stock ({{ card_stock_qty }} left)
+            </span>
+            {% else %}
+            <span class="bg-red-50 text-red-700 border border-red-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Out of Stock
+            </span>
+            {% endif %}
+        </div>
+
+        <!-- Wishlist Button -->
+        <button 
+            type="button"
+            @click.prevent="
+                fetch('/account/wishlist/toggle/' + ({{ card_id|default:0 }}) + '/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        inWishlist = data.in_wishlist;
+                        document.querySelectorAll('#header-wishlist-badge').forEach(el => el.textContent = data.wishlist_count);
+                    }
+                })
+                .catch(err => console.error(err));
+            " 
+            class="pointer-events-auto w-8 h-8 rounded-full bg-white/90 backdrop-blur-md shadow border border-gray-100 flex items-center justify-center text-gray-400 hover:text-rose-500 transition"
+            :class="{ 'text-rose-500 bg-rose-50 border-rose-200': inWishlist }"
+            title="Wishlist"
+        >
+            <i data-lucide="heart" class="w-4 h-4 transition duration-200" :class="{ 'fill-rose-500 text-rose-500': inWishlist }"></i>
+        </button>
+    </div>
+
+    <!-- Product Thumbnail Container (aspect ratio 4:3, relative size) -->
+    <a href="{% url 'product_detail' card_slug|default:'dell-latitude-7490-refurbished' %}" class="block relative w-full aspect-[4/3] bg-[var(--color-background)] rounded-xl overflow-hidden mb-2 group-hover:bg-red-50/50 transition shrink-0">
+        <div class="absolute inset-0 flex items-center justify-center">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ card_title }}" class="object-cover w-full h-full group-hover:scale-105 transition-all duration-300" />
+            {% elif image_url %}
+            <img src="{{ image_url }}" alt="{{ card_title }}" class="object-cover w-full h-full group-hover:scale-105 transition-all duration-300" />
+            {% elif image_icon %}
+            <i data-lucide="{{ image_icon }}" class="w-16 h-16 text-gray-400 group-hover:scale-110 group-hover:text-[var(--color-primary)] transition-all duration-300"></i>
+            {% else %}
+            <i data-lucide="laptop" class="w-16 h-16 text-gray-400 group-hover:scale-110 group-hover:text-[var(--color-primary)] transition-all duration-300"></i>
+            {% endif %}
+        </div>
+    </a>
+
+    <!-- Product Details (flex-grow so cards have identical height) -->
+    <div class="flex flex-col flex-grow mt-3">
+        <!-- Category (Fixed Space) -->
+        <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider h-4 overflow-hidden mb-0.5">
+            {{ card_category_name|default:"Laptop Accessories" }}
+        </div>
+        
+        <!-- Title (Fixed Space: 1 line exactly, height 20px) -->
+        <a href="{% url 'product_detail' card_slug|default:'dell-latitude-7490-refurbished' %}" class="font-bold text-gray-900 text-sm hover:text-[var(--color-primary)] transition line-clamp-1 h-5 min-h-[1.25rem] mt-0.5 block leading-5">
+            {{ card_title|default:"High Performance Product Name" }}
+        </a>
+        
+        <!-- SKU & Brand (Fixed Space) -->
+        <div class="text-[11px] text-gray-500 mt-1.5 flex items-center gap-2 h-4 overflow-hidden">
+            <span>SKU: {{ card_sku|default:"BIT-10293" }}</span>
+            <span>•</span>
+            <span>Brand: {{ card_brand|default:"Dell" }}</span>
+        </div>
+
+        <!-- Rating (Fixed Space) -->
+        <div class="flex items-center gap-1 text-xs text-amber-500 mt-3 h-4 overflow-hidden">
+            <i data-lucide="star" class="w-3.5 h-3.5 fill-current shrink-0"></i>
+            <span class="font-bold text-gray-800">{{ card_rating|default:"4.8" }}</span>
+            <span class="text-gray-400 text-[11px]">({{ card_reviews_count|default:"34" }})</span>
+        </div>
+
+        <!-- Pricing (Fixed Space) -->
+        <div class="flex items-baseline gap-2 mt-3 mb-4 h-7 overflow-hidden">
+            <span class="text-lg font-bold text-gray-900 font-outfit">₹{{ card_price|floatformat:0 }}</span>
+            {% if card_old_price %}
+            <span class="text-xs text-gray-400 line-through">₹{{ card_old_price|floatformat:0 }}</span>
+            {% endif %}
+        </div>
+
+        <!-- CTA Action Buttons (mt-auto) -->
+        <div class="mt-auto pt-2 border-t border-gray-100">
+            {% if card_stock_status != 'out_of_stock' %}
+            <div class="grid grid-cols-2 gap-2">
+                {% if card_id in cart_product_ids or product.id in cart_product_ids %}
+                <a href="{% url 'cart' %}" class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs text-center transition flex items-center justify-center gap-1.5 shadow-sm">
+                    <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Go to Cart
+                </a>
+                {% else %}
+                <button 
+                    hx-get="{% url 'add_cart_ajax' card_id %}?view=card" 
+                    hx-swap="outerHTML"
+                    class="py-2.5 px-3 rounded-xl border border-[var(--color-primary)] bg-red-50 text-[var(--color-primary)] hover:bg-red-100 font-semibold text-xs text-center transition flex items-center justify-center gap-1.5"
+                >
+                    <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> Add
+                </button>
+                {% endif %}
+                <a href="{% url 'buy_now' card_id %}" class="py-2.5 px-3 rounded-xl bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] font-semibold text-xs text-center transition shadow-sm flex items-center justify-center gap-1">
+                    Buy Now
+                </a>
+            </div>
+            {% else %}
+            <button disabled class="w-full py-2.5 px-3 rounded-xl bg-gray-100 text-gray-400 font-semibold text-xs text-center cursor-not-allowed flex items-center justify-center gap-1">
+                <i data-lucide="bell" class="w-3.5 h-3.5"></i> Notify When Available
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</div>

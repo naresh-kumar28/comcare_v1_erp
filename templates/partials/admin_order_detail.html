@@ -1,0 +1,116 @@
+<div class="bg-white w-full max-w-2xl rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
+    <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+        <div>
+            <h3 class="font-bold text-gray-900 text-base font-outfit">
+                Order Details <span class="text-[var(--color-primary)]">#{{ order.order_number }}</span>
+            </h3>
+            <p class="text-[10px] text-gray-400 font-mono">Placed on {{ order.created_at|date:"d M Y • h:i A" }}</p>
+        </div>
+        <button type="button" @click="showOrderModal = false" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    
+    <div class="space-y-4 text-xs text-gray-700">
+        <!-- Customer & Payment Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[var(--color-background)] p-4 rounded-2xl border border-gray-100">
+            <div>
+                <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Customer & Shipping Address</div>
+                <div class="font-bold text-gray-900 text-sm mb-1">{{ order.full_name }}</div>
+                <div class="text-gray-600 font-medium">📞 {{ order.phone }}</div>
+                {% if order.email %}
+                    <div class="text-gray-500 text-[11px]">✉️ {{ order.email }}</div>
+                {% endif %}
+                <div class="text-gray-600 mt-2 leading-relaxed">
+                    {{ order.address_line1 }}{% if order.address_line2 %}, {{ order.address_line2 }}{% endif %}<br>
+                    {{ order.city }}, {{ order.state }} - <span class="font-mono font-bold">{{ order.pincode }}</span>
+                </div>
+            </div>
+
+            <div>
+                <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Payment & Status Summary</div>
+                <div class="space-y-2 mt-1">
+                    <div>
+                        <span class="text-gray-500">Payment Method:</span>
+                        <span class="font-bold text-gray-900 ml-1">{{ order.get_payment_method_display }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Payment Status:</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ml-1 {% if order.payment_status == 'paid' %}bg-emerald-50 text-emerald-700{% elif order.payment_status == 'failed' %}bg-red-50 text-red-700{% else %}bg-gray-100 text-gray-600{% endif %}">
+                            {{ order.get_payment_status_display }}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Current Order Status:</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ml-1 uppercase {% if order.order_status == 'delivered' %}bg-emerald-50 text-emerald-700{% elif order.order_status == 'shipped' %}bg-red-50 text-red-700{% else %}bg-amber-50 text-amber-800{% endif %}">
+                            {{ order.order_status }}
+                        </span>
+                    </div>
+                    {% if order.razorpay_payment_id %}
+                        <div class="text-[10px] font-mono text-gray-400">Razorpay ID: {{ order.razorpay_payment_id }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Items Table -->
+        <div>
+            <h4 class="font-bold text-gray-800 text-xs mb-2 uppercase tracking-wider font-outfit">Order Items List ({{ order.items.count }})</h4>
+            <div class="border border-gray-100 rounded-2xl overflow-hidden">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-gray-50 text-gray-500 font-bold uppercase text-[10px]">
+                        <tr>
+                            <th class="p-3">Product Title</th>
+                            <th class="p-3 text-center">Qty</th>
+                            <th class="p-3 text-right">Unit Price</th>
+                            <th class="p-3 text-right">Total Price</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 font-medium">
+                        {% for item in order.items.all %}
+                            <tr>
+                                <td class="p-3 text-gray-900 font-bold">{{ item.product_title }}</td>
+                                <td class="p-3 text-center font-bold font-mono">x{{ item.quantity }}</td>
+                                <td class="p-3 text-right font-mono">₹{{ item.unit_price }}</td>
+                                <td class="p-3 text-right font-bold text-gray-900 font-mono">₹{{ item.total_price }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="p-4 text-center text-gray-400">No items found for this order.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pricing Totals Summary -->
+        <div class="border-t border-gray-100 pt-3 space-y-1.5 font-medium">
+            <div class="flex justify-between text-gray-500 text-xs">
+                <span>Subtotal</span>
+                <span class="font-mono">₹{{ order.subtotal }}</span>
+            </div>
+            {% if order.coupon_discount > 0 %}
+                <div class="flex justify-between text-emerald-600 text-xs">
+                    <span>Coupon Discount ({{ order.coupon_code }})</span>
+                    <span class="font-mono">-₹{{ order.coupon_discount }}</span>
+                </div>
+            {% endif %}
+            <div class="flex justify-between text-gray-500 text-xs">
+                <span>Shipping Charges</span>
+                <span class="font-mono">₹{{ order.shipping_cost }}</span>
+            </div>
+            <div class="flex justify-between items-center font-bold text-sm text-gray-900 pt-2 border-t border-gray-100">
+                <span>Grand Total Amount</span>
+                <span class="text-[var(--color-primary)] font-outfit text-xl">₹{{ order.grand_total }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+        <a href="{% url 'order_invoice' order.id %}" target="_blank" class="flex-1 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white font-bold py-3 rounded-xl text-xs shadow-md transition flex items-center justify-center gap-1.5">
+            <i data-lucide="printer" class="w-4 h-4"></i> Print Official Invoice
+        </a>
+        <button type="button" @click="showOrderModal = false" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl text-xs transition">
+            Close Preview
+        </button>
+    </div>
+</div>

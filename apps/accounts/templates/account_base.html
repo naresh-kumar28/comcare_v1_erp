@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-[var(--color-background)] min-h-screen" {% block x_data %}{% endblock %}>
+    
+    <!-- Mobile Sub-navigation (scrollable bar visible only on mobile/tablet) -->
+    {% include 'partials/account_mobile_subnav.html' %}
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Sidebar (Visible only on desktop) -->
+            <div class="hidden lg:flex lg:col-span-3 bg-white border border-gray-200 rounded-3xl p-6 flex-col justify-start space-y-6 shadow-sm">
+                
+                <!-- User Profile Sidebar Header (matching reference image & website theme) -->
+                <div class="space-y-5">
+                    <div class="flex items-center gap-3 px-1 pb-4 border-b border-gray-100">
+                        {% if request.user.is_authenticated %}
+                        {% if request.user.profile_picture %}
+                        <img src="{{ request.user.profile_picture.url }}" class="w-11 h-11 rounded-full object-cover shrink-0 shadow-inner border border-gray-200" alt="{{ request.user.display_name }}">
+                        {% else %}
+                        <div class="w-11 h-11 rounded-full bg-red-100/70 text-[var(--color-primary)] flex items-center justify-center font-bold text-base font-outfit shrink-0 shadow-inner uppercase">
+                            {% if request.user.first_name and request.user.last_name %}
+                                {{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}
+                            {% else %}
+                                {{ request.user.display_name|slice:":2" }}
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        <div class="min-w-0 flex-1">
+                            <h3 class="font-extrabold text-gray-900 text-sm sm:text-base font-outfit truncate leading-snug">
+                                Hi, {{ request.user.display_name }}
+                            </h3>
+                            <p class="text-[11px] text-gray-400 font-medium truncate leading-tight mt-0.5">
+                                {{ request.user.email }}
+                            </p>
+                        </div>
+                        {% else %}
+                        <div class="w-11 h-11 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold text-base font-outfit shrink-0 shadow-inner">
+                            <i data-lucide="user" class="w-5 h-5"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <h3 class="font-extrabold text-gray-900 text-sm sm:text-base font-outfit truncate leading-snug">
+                                Guest User
+                            </h3>
+                            <a href="{% url 'login' %}" class="text-[11px] text-[var(--color-primary)] font-semibold hover:underline truncate leading-tight mt-0.5 block">
+                                Sign in to sync your data
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Navigation Links -->
+                    {% include 'partials/account_sidebar_nav.html' %}
+                </div>
+
+                <!-- Bottom User Info & CTA -->
+                <div class="space-y-4">
+                    <div class="border-t border-gray-100 pt-4">
+                        {% if request.user.is_authenticated %}
+                        <form action="{% url 'logout' %}" method="post" class="w-full">
+                            {% csrf_token %}
+                            <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 hover:text-red-600 hover:bg-red-50 text-left transition">
+                                <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                            </button>
+                        </form>
+                        {% else %}
+                        <a href="{% url 'login' %}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-[var(--color-primary)] hover:bg-red-50 transition">
+                            <i data-lucide="log-in" class="w-4 h-4"></i> Login / Register
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Main Content Area -->
+            <div id="account-main-content" class="lg:col-span-9 space-y-6">
+                {% if messages %}
+                    <div class="space-y-3">
+                        {% for message in messages %}
+                            <div class="p-4 rounded-2xl border text-xs font-semibold flex items-center justify-between {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-200{% elif message.tags == 'success' %}bg-emerald-50 text-emerald-700 border-emerald-200{% else %}bg-red-50 text-[var(--color-primary)] border-red-200{% endif %}">
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Skeleton Loader (Shown during HTMX tab loading) -->
+                <div id="account-skeleton-loader" class="htmx-indicator space-y-6">
+                    <div class="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200 shadow-sm space-y-3 animate-pulse">
+                        <div class="h-3.5 bg-red-100 rounded-full w-28"></div>
+                        <div class="h-7 bg-gray-200 rounded-xl w-64"></div>
+                        <div class="h-3 bg-gray-100 rounded-lg w-80"></div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-4 animate-pulse">
+                            <div class="flex justify-between items-center">
+                                <div class="h-4 bg-gray-200 rounded-lg w-32"></div>
+                                <div class="h-4 bg-gray-100 rounded-md w-16"></div>
+                            </div>
+                            <div class="h-3 bg-gray-100 rounded-md w-full"></div>
+                            <div class="h-3 bg-gray-100 rounded-md w-2/3"></div>
+                            <div class="pt-3 border-t border-gray-100 flex justify-between">
+                                <div class="h-4 bg-gray-200 rounded-md w-16"></div>
+                                <div class="h-4 bg-gray-200 rounded-md w-20"></div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-4 animate-pulse">
+                            <div class="flex justify-between items-center">
+                                <div class="h-4 bg-gray-200 rounded-lg w-32"></div>
+                                <div class="h-4 bg-gray-100 rounded-md w-16"></div>
+                            </div>
+                            <div class="h-3 bg-gray-100 rounded-md w-full"></div>
+                            <div class="h-3 bg-gray-100 rounded-md w-2/3"></div>
+                            <div class="pt-3 border-t border-gray-100 flex justify-between">
+                                <div class="h-4 bg-gray-200 rounded-md w-16"></div>
+                                <div class="h-4 bg-gray-200 rounded-md w-20"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="account-content-wrapper" class="space-y-6">
+                    {% block account_content %}{% endblock %}
+                </div>
+            </div>
+
+<style>
+    #account-skeleton-loader {
+        display: none !important;
+    }
+    #account-main-content.htmx-request #account-skeleton-loader,
+    body.htmx-request #account-skeleton-loader {
+        display: block !important;
+    }
+    #account-main-content.htmx-request #account-content-wrapper,
+    body.htmx-request #account-content-wrapper {
+        display: none !important;
+    }
+</style>
+
+        </div>
+    </div>
+
+    {% block modals %}{% endblock %}
+</div>
+{% endblock %}

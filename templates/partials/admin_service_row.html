@@ -1,0 +1,66 @@
+<tr id="service-row-{{ lead.id }}" class="hover:bg-red-50/30 transition">
+    <!-- Customer Info -->
+    <td class="p-4">
+        <div class="font-bold text-gray-900 text-xs">{{ lead.full_name }}</div>
+        <div class="text-[10px] text-gray-500 font-mono">{{ lead.phone }}</div>
+        <div class="text-[9px] text-gray-400 mt-0.5">{{ lead.created_at|date:"d M Y • h:i A" }}</div>
+    </td>
+
+    <!-- Requested Service -->
+    <td class="p-4 font-bold text-[var(--color-primary)] text-xs">
+        {{ lead.service_category }}
+    </td>
+
+    <!-- Issue Description & Photos -->
+    <td class="p-4">
+        <p class="text-gray-800 max-w-xs font-medium text-xs line-clamp-2" title="{{ lead.issue_description }}">
+            {{ lead.issue_description }}
+        </p>
+        {% if lead.device_photo %}
+            <a href="{{ lead.device_photo.url }}" target="_blank" class="text-[10px] text-[var(--color-primary)] font-bold underline inline-flex items-center gap-1 mt-1">
+                <i data-lucide="image" class="w-3 h-3"></i> View Device Photo
+            </a>
+        {% endif %}
+    </td>
+
+    <!-- Preferred Callback -->
+    <td class="p-4 font-semibold text-gray-700 text-xs">
+        {{ lead.preferred_time|default:"Anytime" }}
+    </td>
+
+    <!-- Lead Status Pipeline Dropdown -->
+    <td class="p-4">
+        <select hx-post="{% url 'admin_service_update_status' lead.id %}"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                hx-target="#service-row-{{ lead.id }}"
+                hx-swap="outerHTML"
+                name="status"
+                class="px-3 py-1.5 font-bold text-xs rounded-xl focus:outline-none cursor-pointer transition border whitespace-nowrap
+                       {% if lead.status == 'completed' %}bg-emerald-50 text-emerald-700 border-emerald-200
+                       {% elif lead.status == 'in_progress' %}bg-red-50 text-red-700 border-red-200
+                       {% elif lead.status == 'cancelled' %}bg-red-50 text-red-700 border-red-200
+                       {% else %}bg-amber-50 text-amber-800 border-amber-200{% endif %}">
+            <option value="pending" {% if lead.status == 'pending' %}selected{% endif %}>New / Pending</option>
+            <option value="in_progress" {% if lead.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+            <option value="completed" {% if lead.status == 'completed' %}selected{% endif %}>Completed</option>
+            <option value="cancelled" {% if lead.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+        </select>
+    </td>
+
+    <!-- Direct Contact & Actions -->
+    <td class="p-4 text-right space-x-1.5 whitespace-nowrap">
+        <a href="tel:{{ lead.phone }}" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs transition inline-flex items-center gap-1">
+            <i data-lucide="phone" class="w-3.5 h-3.5"></i> Call
+        </a>
+        <a href="https://wa.me/91{{ lead.phone }}" target="_blank" class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl font-bold text-xs transition inline-flex items-center gap-1">
+            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> WhatsApp
+        </a>
+        <button hx-post="{% url 'admin_service_delete' lead.id %}"
+                hx-confirm="Delete service lead request from '{{ lead.full_name|escapejs }}'?"
+                hx-target="#service-row-{{ lead.id }}"
+                hx-swap="outerHTML swap:0.3s"
+                class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold text-xs transition">
+            Delete
+        </button>
+    </td>
+</tr>

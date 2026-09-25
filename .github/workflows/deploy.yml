@@ -1,0 +1,63 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to VPS Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1.2.0
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER || 'root' }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          envs: GITHUB_TOKEN
+
+          script: |
+            set -e
+
+            cd /ComCare
+
+            echo "==> 1. Pull latest changes"
+
+            git config --global --add safe.directory /ComCare 2>/dev/null || true
+
+            git -c url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf="https://github.com/" fetch origin main
+
+            git reset --hard origin/main
+
+            echo "==> 2. Update dependencies"
+
+            /ComCare/venv/bin/pip install -r requirements.txt
+
+            echo "==> 3. Run migrations"
+
+            /ComCare/venv/bin/python manage.py migrate --noinput
+
+            echo "==> 4. Collect static files"
+
+            /ComCare/venv/bin/python manage.py collectstatic --noinput
+
+            echo "==> 5. Restart application"
+
+            sudo systemctl restart comcare
+
+            echo "==> 6. Verify service"
+
+            sudo systemctl is-active --quiet comcare
+
+            echo "==> Deployment Successful <=="

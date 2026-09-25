@@ -1,0 +1,587 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ComCare — E-Commerce & Repair Services | Greater Noida, UP{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================
+     HERO + CATEGORY SECTION (Responsive: Mobile Promo / Desktop Full)
+     ============================================================ -->
+
+<!-- ========== MOBILE VERSION (visible below md) ========== -->
+<section class="md:hidden bg-white px-4 pt-4 pb-6" x-data="{ mSlide: 0 }">
+    <!-- Promo Card -->
+    <div class="relative bg-gradient-to-br from-[var(--color-promo-from)] to-[var(--color-promo-to)] rounded-2xl p-5 overflow-hidden">
+        <div class="relative z-10 max-w-[60%]">
+            <h2 class="text-lg font-extrabold text-gray-900 font-outfit leading-snug">
+                Best Quality <span class="block">Accessories</span> At Best Prices
+            </h2>
+            <a href="{% url 'shop' %}"
+                class="inline-flex items-center gap-1.5 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white text-xs font-bold px-4 py-2 rounded-xl mt-3 transition">
+                Shop Now
+            </a>
+        </div>
+
+        <!-- Product Image -->
+        <img src="{% static 'images/phone/headphones.png' %}" alt="Best accessories"
+            class="absolute right-2 top-1/2 -translate-y-1/2 w-36 h-36 object-contain drop-shadow-xl" />
+
+        <!-- Carousel Dots -->
+        <div class="relative z-10 flex items-center gap-1.5 mt-4">
+            <button @click="mSlide = 0" :class="mSlide === 0 ? 'bg-[var(--color-primary)] w-4' : 'bg-blue-200 w-1.5'"
+                class="h-1.5 rounded-full transition-all"></button>
+            <button @click="mSlide = 1" :class="mSlide === 1 ? 'bg-[var(--color-primary)] w-4' : 'bg-blue-200 w-1.5'"
+                class="h-1.5 rounded-full transition-all"></button>
+            <button @click="mSlide = 2" :class="mSlide === 2 ? 'bg-[var(--color-primary)] w-4' : 'bg-blue-200 w-1.5'"
+                class="h-1.5 rounded-full transition-all"></button>
+        </div>
+    </div>
+
+    <!-- Category Icon Row -->
+    <div class="grid grid-cols-4 gap-2 mt-5">
+        <a href="{% url 'shop' %}?cat=laptop-accessories" class="flex flex-col items-center gap-2 group">
+            <div
+                class="w-14 h-14 rounded-2xl bg-[var(--color-background)] border border-gray-100 flex items-center justify-center text-[var(--color-primary)] group-active:scale-95 transition-transform">
+                <i data-lucide="laptop" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10.5px] font-semibold text-gray-700 text-center leading-tight">Laptop Access.</span>
+        </a>
+        <a href="{% url 'shop' %}?cat=printer-accessories" class="flex flex-col items-center gap-2 group">
+            <div
+                class="w-14 h-14 rounded-2xl bg-[var(--color-background)] border border-gray-100 flex items-center justify-center text-[var(--color-primary)] group-active:scale-95 transition-transform">
+                <i data-lucide="printer" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10.5px] font-semibold text-gray-700 text-center leading-tight">Printer Access.</span>
+        </a>
+        <a href="{% url 'shop' %}?cat=cctv-accessories" class="flex flex-col items-center gap-2 group">
+            <div
+                class="w-14 h-14 rounded-2xl bg-[var(--color-background)] border border-gray-100 flex items-center justify-center text-[var(--color-primary)] group-active:scale-95 transition-transform">
+                <i data-lucide="shield" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10.5px] font-semibold text-gray-700 text-center leading-tight">CCTV Access.</span>
+        </a>
+        <a href="{% url 'shop' %}?cat=second-hand-tablets" class="flex flex-col items-center gap-2 group">
+            <div
+                class="w-14 h-14 rounded-2xl bg-[var(--color-background)] border border-gray-100 flex items-center justify-center text-[var(--color-primary)] group-active:scale-95 transition-transform">
+                <i data-lucide="tablet" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10.5px] font-semibold text-gray-700 text-center leading-tight">Second-Hand Tablet.</span>
+        </a>
+        <a href="{% url 'shop' %}?cat=cctv-products" class="flex flex-col items-center gap-2 group">
+            <div
+                class="w-14 h-14 rounded-2xl bg-[var(--color-background)] border border-gray-100 flex items-center justify-center text-[var(--color-primary)] group-active:scale-95 transition-transform">
+                <i data-lucide="video" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10.5px] font-semibold text-gray-700 text-center leading-tight">CCTV Products</span>
+        </a>
+
+        <a href="{% url 'shop' %}?cat=second-hand-laptops" class="flex flex-col items-center gap-2 group">
+            <div
+                class="w-14 h-14 rounded-2xl bg-[var(--color-background)] border border-gray-100 flex items-center justify-center text-[var(--color-primary)] group-active:scale-95 transition-transform">
+                <i data-lucide="laptop" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10.5px] font-semibold text-gray-700 text-center leading-tight">Second-Hand Laptop</span>
+        </a>
+
+
+        <a href="{% url 'services' %}" class="flex flex-col items-center gap-2 group">
+            <div
+                class="w-14 h-14 rounded-2xl bg-[var(--color-background)] border border-gray-100 flex items-center justify-center text-[var(--color-primary)] group-active:scale-95 transition-transform">
+                <i data-lucide="wrench" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10.5px] font-semibold text-gray-700 text-center leading-tight">Repair Services</span>
+        </a>
+    </div>
+</section>
+
+<!-- ========== DESKTOP HERO BANNER CAROUSEL (visible md and up) ========== -->
+<section class="hidden md:block relative w-full overflow-hidden bg-white border-b border-gray-100"
+    x-data="{ 
+        slide: 0, 
+        total: 3, 
+        timer: null,
+        startTimer() { this.timer = setInterval(() => this.next(), 4500) },
+        stopTimer() { clearInterval(this.timer) },
+        next() { this.slide = (this.slide + 1) % this.total },
+        prev() { this.slide = (this.slide - 1 + this.total) % this.total }
+    }"
+    x-init="startTimer()"
+    @mouseenter="stopTimer()"
+    @mouseleave="startTimer()">
+
+    <!-- Slides Wrapper -->
+    <div class="relative min-h-[260px] lg:min-h-[280px]">
+
+        <!-- ==================== SLIDE 0: SHOP PRODUCTS ==================== -->
+        <div x-show="slide === 0" 
+            x-transition:enter="transition ease-out duration-500"
+            x-transition:enter-start="opacity-0 translate-x-4"
+            x-transition:enter-end="opacity-100 translate-x-0"
+            x-transition:leave="transition ease-in duration-300 absolute inset-0"
+            x-transition:leave-start="opacity-100 translate-x-0"
+            x-transition:leave-end="opacity-0 -translate-x-4"
+            class="w-full h-full bg-gradient-to-r from-red-50/80 via-white to-rose-50/40">
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex items-center justify-between gap-6">
+                <!-- Content Left -->
+                <div class="max-w-xl space-y-3 z-10">
+                    <div class="inline-flex items-center gap-2 bg-red-100/80 text-[var(--color-primary)] font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">
+                        <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
+                        <span>100% Genuine Products</span>
+                    </div>
+
+                    <h2 class="text-2xl lg:text-3xl font-extrabold font-outfit text-gray-900 leading-tight">
+                        Shop Smart TVs, Laptops & Electronics
+                    </h2>
+
+                    <p class="text-gray-600 text-sm leading-relaxed max-w-lg">
+                        Get guaranteed fast delivery from your nearest ComCare Franchise store with 1 year official warranty and cash on delivery.
+                    </p>
+
+                    <div class="flex items-center gap-3 pt-2">
+                        <a href="{% url 'shop' %}"
+                            class="inline-flex items-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md shadow-red-600/20 transition-all hover:scale-[1.02]">
+                            <span>Explore Shop</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4 shrink-0"></i>
+                        </a>
+                        <a href="{% url 'categories' %}"
+                            class="inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 px-4 py-2.5 rounded-xl font-semibold text-sm transition">
+                            <span>Browse Categories</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Image Right -->
+                <div class="hidden md:flex items-center justify-center shrink-0 w-[40%] max-h-[230px]">
+                    <img src="{% static 'images/home/home-1-banner.png' %}" alt="Shop Genuine Products"
+                        class="object-contain max-h-[220px] rounded-2xl hover:scale-105 transition-transform duration-500" />
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SLIDE 1: BOOK TECH REPAIR ==================== -->
+        <div x-show="slide === 1" 
+            x-transition:enter="transition ease-out duration-500"
+            x-transition:enter-start="opacity-0 translate-x-4"
+            x-transition:enter-end="opacity-100 translate-x-0"
+            x-transition:leave="transition ease-in duration-300 absolute inset-0"
+            x-transition:leave-start="opacity-100 translate-x-0"
+            x-transition:leave-end="opacity-0 -translate-x-4"
+            class="w-full h-full bg-gradient-to-r from-red-50/80 via-white to-rose-50/40"
+            style="display: none;">
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex items-center justify-between gap-6">
+                <!-- Content Left -->
+                <div class="max-w-xl space-y-3 z-10">
+                    <div class="inline-flex items-center gap-2 bg-red-100/80 text-[var(--color-primary)] font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">
+                        <i data-lucide="wrench" class="w-3.5 h-3.5"></i>
+                        <span>Doorstep & In-Store Repairs</span>
+                    </div>
+
+                    <h2 class="text-2xl lg:text-3xl font-extrabold font-outfit text-gray-900 leading-tight">
+                        Book Certified Tech Repair
+                    </h2>
+
+                    <p class="text-gray-600 text-sm leading-relaxed max-w-lg">
+                        Fast diagnostics & repair for Laptops, Desktops, Smartphones & Printers by certified ComCare engineers with genuine parts.
+                    </p>
+
+                    <div class="flex items-center gap-3 pt-2">
+                        <a href="{% url 'services' %}"
+                            class="inline-flex items-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md shadow-red-600/20 transition-all hover:scale-[1.02]">
+                            <span>Book Repair Service</span>
+                            <i data-lucide="wrench" class="w-4 h-4 shrink-0"></i>
+                        </a>
+                        <div class="flex items-center gap-2 text-xs font-semibold text-gray-600 bg-white/80 border border-gray-200 px-3.5 py-2 rounded-xl">
+                            <i data-lucide="shield-check" class="w-4 h-4 text-[var(--color-primary)]"></i>
+                            <span>90 Days Repair Warranty</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Right -->
+                <div class="hidden md:flex items-center justify-center shrink-0 w-[40%] max-h-[230px]">
+                    <img src="{% static 'images/home/repair-banner.jpg' %}" alt="Book Tech Repair"
+                        class="object-cover max-h-[220px] w-full rounded-2xl hover:scale-105 transition-transform duration-500" />
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SLIDE 2: PROTECT WITH AMC ==================== -->
+        <div x-show="slide === 2" 
+            x-transition:enter="transition ease-out duration-500"
+            x-transition:enter-start="opacity-0 translate-x-4"
+            x-transition:enter-end="opacity-100 translate-x-0"
+            x-transition:leave="transition ease-in duration-300 absolute inset-0"
+            x-transition:leave-start="opacity-100 translate-x-0"
+            x-transition:leave-end="opacity-0 -translate-x-4"
+            class="w-full h-full bg-gradient-to-r from-red-50/80 via-white to-rose-50/40"
+            style="display: none;">
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex items-center justify-between gap-6">
+                <!-- Content Left -->
+                <div class="max-w-xl space-y-3 z-10">
+                    <div class="inline-flex items-center gap-2 bg-red-100/80 text-[var(--color-primary)] font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">
+                        <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
+                        <span>Annual Maintenance Contract</span>
+                    </div>
+
+                    <h2 class="text-2xl lg:text-3xl font-extrabold font-outfit text-gray-900 leading-tight">
+                        Protect Your IT Devices with AMC
+                    </h2>
+
+                    <p class="text-gray-600 text-sm leading-relaxed max-w-lg">
+                        Complete protection for home & corporate IT setup. Unlimited service calls, preventive care & priority technician support.
+                    </p>
+
+                    <div class="flex items-center gap-3 pt-2">
+                        <a href="{% url 'services' %}"
+                            class="inline-flex items-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md shadow-red-600/20 transition-all hover:scale-[1.02]">
+                            <span>Get AMC Protection</span>
+                            <i data-lucide="shield-check" class="w-4 h-4 shrink-0"></i>
+                        </a>
+                        <a href="{% url 'contact' %}"
+                            class="inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 px-4 py-2.5 rounded-xl font-semibold text-sm transition">
+                            <span>Corporate Enquiry</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Image Right -->
+                <div class="hidden md:flex items-center justify-center shrink-0 w-[40%] max-h-[230px]">
+                    <img src="{% static 'images/home/amc-banner.jpg' %}" alt="Protect with AMC"
+                        class="object-cover max-h-[220px] w-full rounded-2xl hover:scale-105 transition-transform duration-500" />
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Carousel Indicators (Dots) -->
+    <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+        <button @click="slide = 0"
+            :class="slide === 0 ? 'bg-[var(--color-primary)] w-7' : 'bg-gray-300 hover:bg-gray-400 w-2.5'"
+            class="h-2 rounded-full transition-all duration-300 focus:outline-none"></button>
+        <button @click="slide = 1"
+            :class="slide === 1 ? 'bg-[var(--color-primary)] w-7' : 'bg-gray-300 hover:bg-gray-400 w-2.5'"
+            class="h-2 rounded-full transition-all duration-300 focus:outline-none"></button>
+        <button @click="slide = 2"
+            :class="slide === 2 ? 'bg-[var(--color-primary)] w-7' : 'bg-gray-300 hover:bg-gray-400 w-2.5'"
+            class="h-2 rounded-full transition-all duration-300 focus:outline-none"></button>
+    </div>
+</section>
+
+<!-- ========== CATEGORY GRID (Desktop only — full 7-card version) ========== -->
+<section class="hidden md:block py-6 bg-white border-t border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900 font-outfit">Shop by Category</h2>
+            <a href="{% url 'categories' %}"
+                class="text-xs font-bold text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] flex items-center gap-1">
+                View All <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4 ">
+            {% for cat in categories %}
+            <a href="{% url 'shop' %}?cat={{ cat.slug }}"
+                class="group bg-white border border-gray-200 rounded-2xl p-4 hover:border-[var(--color-primary)] hover:shadow-md transition-all duration-300 flex flex-col items-center text-center">
+                <div
+                    class="w-full aspect-square rounded-xl bg-gray-50 flex items-center justify-center mb-3 overflow-hidden">
+                    {% if cat.image %}
+                    <img src="{{ cat.image.url }}" alt="{{ cat.name }}"
+                        class="object-contain w-full h-full group-hover:scale-105 transition-transform" />
+                    {% else %}
+                    <i data-lucide="folder" class="w-12 h-12 text-gray-300"></i>
+                    {% endif %}
+                </div>
+                <h3 class="text-sm font-bold text-gray-900 font-outfit">{{ cat.name }}</h3>
+                <p class="text-[11px] text-gray-500 mt-0.5">{{ cat.products.count }} Products</p>
+            </a>
+            {% endfor %}
+
+        </div>
+
+    </div>
+</section>
+
+<!-- Recently Viewed Products Section -->
+{% if recently_viewed %}
+<section class="py-6 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <span class="text-[var(--color-primary)] text-xs font-bold uppercase tracking-wider">Your History</span>
+                <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900 font-outfit mt-1">Recently Viewed</h2>
+            </div>
+            <a href="{% url 'shop' %}?sort=recently_viewed"
+                class="text-xs font-bold text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] flex items-center gap-1">
+                Explore More <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+        </div>
+
+        <!-- Products Row/Grid -->
+        <div
+            class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-thin sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-6 sm:overflow-visible sm:pb-0">
+            {% for product in recently_viewed %}
+            <div class="min-w-[280px] w-[280px] sm:w-auto sm:min-w-0 snap-start">
+                {% include 'partials/product_card.html' with product=product %}
+            </div>
+            {% empty %}
+            <p class="text-gray-500 text-sm py-8 col-span-full text-center">No products recently viewed</p>
+            {% endfor %}
+        </div>
+
+        <div class="mt-12 text-center">
+            <a href="{% url 'shop' %}?sort=recently_viewed"
+                class="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl border border-gray-300 bg-white text-gray-800 font-bold text-xs hover:bg-[var(--color-primary)] hover:text-white hover:border-[var(--color-primary)] transition shadow-sm">
+                View All Recently Products <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+
+<!-- Featured Products Showcase with HTMX Loading Simulation -->
+<section class="py-6 bg-white " x-data="{ activeTab: 'featured', loading: false }" x-init="$nextTick(() => refreshIcons())" x-effect="$nextTick(() => refreshIcons())">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+            <div>
+                <span class="text-[var(--color-primary)] text-xs font-bold uppercase tracking-wider">Store Catalog</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 font-outfit mt-1">Trending & Popular Items
+                </h2>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="flex items-center gap-2 p-1.5 bg-[var(--color-background)] border border-gray-200 rounded-xl">
+                <button @click="activeTab = 'featured'; loading = true; setTimeout(() => { loading = false; $nextTick(() => refreshIcons()) }, 400)"
+                    class="px-4 py-2 rounded-lg text-xs font-bold transition"
+                    :class="activeTab === 'featured' ? 'bg-[var(--color-primary)] text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'">
+                    Featured Products
+                </button>
+                <button @click="activeTab = 'new'; loading = true; setTimeout(() => { loading = false; $nextTick(() => refreshIcons()) }, 400)"
+                    class="px-4 py-2 rounded-lg text-xs font-bold transition"
+                    :class="activeTab === 'new' ? 'bg-[var(--color-primary)] text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'">
+                    New Arrivals
+                </button>
+                <button @click="activeTab = 'best'; loading = true; setTimeout(() => { loading = false; $nextTick(() => refreshIcons()) }, 400)"
+                    class="px-4 py-2 rounded-lg text-xs font-bold transition"
+                    :class="activeTab === 'best' ? 'bg-[var(--color-primary)] text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'">
+                    Best Sellers
+                </button>
+            </div>
+        </div>
+
+        <!-- Skeleton Loading Placeholder Grid (Simulated Shimmer) -->
+        <template x-if="loading">
+            <div
+                class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-thin sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-6 sm:overflow-visible sm:pb-0">
+                <div class="min-w-[280px] w-[280px] sm:w-auto sm:min-w-0 snap-start">
+                    {% include 'partials/skeleton_product_card.html' %}
+                </div>
+                <div class="min-w-[280px] w-[280px] sm:w-auto sm:min-w-0 snap-start">
+                    {% include 'partials/skeleton_product_card.html' %}
+                </div>
+                <div class="min-w-[280px] w-[280px] sm:w-auto sm:min-w-0 snap-start">
+                    {% include 'partials/skeleton_product_card.html' %}
+                </div>
+                <div class="min-w-[280px] w-[280px] sm:w-auto sm:min-w-0 snap-start">
+                    {% include 'partials/skeleton_product_card.html' %}
+                </div>
+            </div>
+        </template>
+
+        <!-- Actual Products Grid -->
+        <template x-if="!loading">
+            <div>
+                <!-- Featured Products Tab -->
+                <div x-show="activeTab === 'featured'" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-thin sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-6 sm:overflow-visible sm:pb-0">
+                    {% for product in featured_products %}
+                    <div class="min-w-[280px] w-[280px] sm:w-auto sm:min-w-0 snap-start">
+                        {% include 'partials/product_card.html' with product=product %}
+                    </div>
+                    {% empty %}
+                    <p class="text-gray-500 text-sm py-8 col-span-full text-center">No featured products available</p>
+                    {% endfor %}
+                </div>
+
+                <!-- New Arrivals Tab -->
+                <div x-show="activeTab === 'new'" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-thin sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-6 sm:overflow-visible sm:pb-0" style="display: none;">
+                    {% for product in new_arrivals %}
+                    <div class="min-w-[280px] w-[280px] sm:w-auto sm:min-w-0 snap-start">
+                        {% include 'partials/product_card.html' with product=product %}
+                    </div>
+                    {% empty %}
+                    <p class="text-gray-500 text-sm py-8 col-span-full text-center">No new arrivals available</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Best Sellers Tab -->
+                <div x-show="activeTab === 'best'" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-thin sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-6 sm:overflow-visible sm:pb-0" style="display: none;">
+                    {% for product in best_sellers %}
+                    <div class="min-w-[280px] w-[280px] sm:w-auto sm:min-w-0 snap-start">
+                        {% include 'partials/product_card.html' with product=product %}
+                    </div>
+                    {% empty %}
+                    <p class="text-gray-500 text-sm py-8 col-span-full text-center">No best selling products available</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </template>
+
+        <div class="mt-12 text-center">
+            <a x-bind:href="activeTab === 'featured' ? `{% url 'shop' %}?sort=featured` : activeTab === 'new' ? `{% url 'shop' %}?sort=new_arrivals` : activeTab === 'best' ? `{% url 'shop' %}?sort=best_sellers` : `{% url 'shop' %}`"
+                class="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl border border-gray-300 bg-white text-gray-800 font-bold text-xs hover:bg-[var(--color-primary)] hover:text-white hover:border-[var(--color-primary)] transition shadow-sm">
+                View All Store Products <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </a>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ============================================================
+     SERVICES STRIP SECTION
+     ============================================================ -->
+<section class="bg-white py-6 md:py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Desktop: 3-column row | Mobile: stacked -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            <a href="{% url 'services' %}?type=printer-repair"
+                class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--color-gradient-from)] to-[var(--color-gradient-to)] min-h-[110px] md:min-h-[130px] flex items-center justify-between px-5 py-4">
+                <div class="relative z-10">
+                    <h3 class="text-gray-900 text-base sm:text-lg font-extrabold font-outfit leading-tight">Laptop
+                        Repair</h3>
+                    <p class="text-gray-500 text-xs mt-1">Fast &amp; Reliable Service</p>
+                    <span
+                        class="inline-flex items-center gap-1 text-[var(--color-primary)] text-xs font-bold mt-3 group-hover:gap-2 transition-all">
+                        Book Now <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </span>
+                </div>
+                <img src="https://pngfre.com/wp-content/uploads/laptop-png-from-pngfre-22.png?text=Laptop&font=poppins"
+                    alt="Laptop Repair Technician"
+                    class="w-20 sm:w-24 object-contain shrink-0 drop-shadow-lg group-hover:scale-110 transition-transform duration-500" />
+            </a>
+
+            <!-- Card 2: Printer Repair (Light, image right) -->
+            <a href="{% url 'services' %}?type=printer-repair"
+                class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--color-gradient-from)] to-[var(--color-gradient-to)] min-h-[110px] md:min-h-[130px] flex items-center justify-between px-5 py-4">
+                <div class="relative z-10">
+                    <h3 class="text-gray-900 text-base sm:text-lg font-extrabold font-outfit leading-tight">Printer
+                        Repair</h3>
+                    <p class="text-gray-500 text-xs mt-1">On-site Repair Service</p>
+                    <span
+                        class="inline-flex items-center gap-1 text-[var(--color-primary)] text-xs font-bold mt-3 group-hover:gap-2 transition-all">
+                        Book Now <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </span>
+                </div>
+                <img src="https://freepngimg.com/download/technology/51330-5-colored-printer-free-transparent-image-hq.png?text=Printer&font=poppins"
+                    alt="Printer Repair"
+                    class="w-20 sm:w-24 object-contain shrink-0 drop-shadow-lg group-hover:scale-110 transition-transform duration-500" />
+            </a>
+
+            <!-- Card 3: CCTV Installation (Light, image right) -->
+            <a href="{% url 'services' %}?type=cctv-installation"
+                class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--color-gradient-from)] to-[var(--color-gradient-to)] min-h-[110px] md:min-h-[130px] flex items-center justify-between px-5 py-4">
+                <div class="relative z-10">
+                    <h3 class="text-gray-900 text-base sm:text-lg font-extrabold font-outfit leading-tight">CCTV
+                        Installation</h3>
+                    <p class="text-gray-500 text-xs mt-1">Secure Your Business</p>
+                    <span
+                        class="inline-flex items-center gap-1 text-[var(--color-primary)] text-xs font-bold mt-3 group-hover:gap-2 transition-all">
+                        Book Now <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </span>
+                </div>
+                <img src="https://cpplusworld.com/prodassets/product/small/3bb4cb29-7f7f-4eeb-beac-ab5995b5935c.png?text=CCTV&font=poppins"
+                    alt="CCTV Installation"
+                    class="w-16 sm:w-20 object-contain shrink-0 drop-shadow-lg group-hover:scale-110 transition-transform duration-500" />
+            </a>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- Customer Reviews Section -->
+<section class="py-16 bg-white border-t border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-12">
+            <span class="text-[var(--color-primary)] text-xs font-bold uppercase tracking-wider font-poppins">Customer Trust</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 font-outfit mt-1">What Our Clients Say</h2>
+            <p class="text-xs text-gray-500 mt-2">Serving customers in Greater Noida, UP with 10+ years of dedicated service</p>
+        </div>
+
+        {% if client_reviews %}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {% for review in client_reviews %}
+            <div class="bg-[var(--color-background)] p-6 rounded-2xl border border-gray-200/80 space-y-4 flex flex-col justify-between hover:shadow-md transition">
+                <!-- Main Content Area -->
+                <div class="space-y-4">
+                    <!-- Top Section: User Info -->
+                    <div class="flex items-center gap-3">
+                        <!-- Avatar (Profile Picture or Fallback to Initials) -->
+                        {% if review.user.profile_picture %}
+                            <img src="{{ review.user.profile_picture.url }}" alt="{{ review.user.first_name }}" class="w-12 h-12 rounded-full object-cover border border-gray-200 shrink-0" />
+                        {% else %}
+                            <div class="w-12 h-12 rounded-full bg-red-100 text-[var(--color-primary)] font-bold text-lg flex items-center justify-center font-outfit shrink-0">
+                                {{ review.user.first_name|slice:":1"|upper }}{{ review.user.last_name|slice:":1"|upper|default:review.user.phone_number|slice:":2" }}
+                            </div>
+                        {% endif %}
+
+                        <div class="flex-1 space-y-1">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="text-xs font-bold text-gray-900 font-outfit">
+                                    {{ review.user.first_name }} {{ review.user.last_name|default:"" }}
+                                </div>
+                                <!-- Green Verified Buyer Badge -->
+                                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-100 text-green-700 font-semibold text-[10px]">
+                                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                                    Verified Buyer
+                                </div>
+                            </div>
+                            <!-- Verified Buyer Text and Product Link (if exists) -->
+                            <div class="text-[10px] text-gray-500">
+                                {% if review.product %}
+                                    <a href="{% url 'product_detail' review.product.slug %}" class="hover:text-[var(--color-primary)] hover:underline truncate max-w-[180px] text-[9px]">
+                                        Verified Buyer for {{ review.product.title|truncatewords:3 }}
+                                    </a>
+                                {% else %}
+                                    <span class="text-[9px]">Verified Buyer</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stars Block -->
+                    <div class="flex items-center gap-0.5 text-amber-500 pt-2 border-t border-gray-100/50">
+                        {% for i in "12345" %}
+                            <i data-lucide="star" class="w-4 h-4 {% if forloop.counter <= review.rating %}fill-current{% else %}text-gray-300{% endif %}"></i>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Bottom Section: Review Text -->
+                    <div class="space-y-2">
+                        {% if review.title %}
+                            <h4 class="text-sm font-bold text-gray-900 font-outfit">{{ review.title }}</h4>
+                        {% endif %}
+                        <p class="text-xs text-gray-700 leading-relaxed italic">
+                            "{{ review.comment }}"
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center p-8 bg-gray-50 rounded-2xl border border-gray-200">
+            <p class="text-xs text-gray-500 font-semibold">No client reviews available yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

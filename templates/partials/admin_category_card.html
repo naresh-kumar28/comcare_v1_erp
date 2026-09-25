@@ -1,0 +1,46 @@
+<div id="category-card-{{ category.id }}" class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-4 relative group">
+
+    <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-red-50 text-[var(--color-primary)] border border-red-100 overflow-hidden flex items-center justify-center font-bold shrink-0">
+                {% if category.image %}
+                    <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-full h-full object-cover">
+                {% else %}
+                    <i data-lucide="layers" class="w-6 h-6"></i>
+                {% endif %}
+            </div>
+            <div>
+                <h3 class="font-bold text-gray-900 text-sm font-outfit flex items-center gap-2">
+                    {{ category.name }}
+                    {% if not category.is_active %}
+                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-gray-100 text-gray-500">Inactive</span>
+                    {% endif %}
+                </h3>
+                <p class="text-[10px] text-gray-400 font-mono">Slug: {{ category.slug }} • {{ category.products_count|default:category.products.count }} Products</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button hx-get="{% url 'admin_category_edit_form' category.id %}"
+                    hx-target="#category-modal-container"
+                    hx-swap="innerHTML"
+                    @click="showCatModal = true"
+                    class="text-xs font-bold text-[var(--color-primary)] hover:underline flex items-center gap-1">
+                <i data-lucide="edit-2" class="w-3.5 h-3.5"></i> Edit
+            </button>
+            
+            <button hx-post="{% url 'admin_category_delete' category.id %}"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                    hx-confirm="Are you sure you want to delete category '{{ category.name|escapejs }}'?"
+                    hx-target="#category-card-{{ category.id }}"
+                    hx-swap="outerHTML swap:0.3s"
+                    class="text-xs font-bold text-red-500 hover:text-red-700 hover:underline flex items-center gap-1">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete
+            </button>
+        </div>
+    </div>
+
+    {% if category.description %}
+        <p class="text-xs text-gray-600 leading-relaxed line-clamp-2">{{ category.description }}</p>
+    {% endif %}
+</div>

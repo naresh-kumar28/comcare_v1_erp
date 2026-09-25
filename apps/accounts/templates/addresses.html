@@ -1,0 +1,181 @@
+{% extends base_template|default:'account_base.html' %}
+
+{% block title %}My Saved Addresses — ComCare{% endblock %}
+
+{% block account_content %}
+<div x-data="{
+    showAddressModal: false,
+    editMode: false,
+    editingAddressId: null,
+    form: {
+        full_name: '',
+        phone: '',
+        email: '',
+        address_line1: '',
+        address_line2: '',
+        pincode: '',
+        city: 'Purnea',
+        state: 'Bihar',
+        address_type: 'home',
+        is_default: false
+    },
+    fetchLocationAddress() {
+        if (typeof window.fetchNominatimReverseAddress === 'function') {
+            window.fetchNominatimReverseAddress((geoData) => {
+                if (geoData.streetAddress && !this.form.address_line1) {
+                    this.form.address_line1 = geoData.streetAddress;
+                }
+                if (geoData.city) this.form.city = geoData.city;
+                if (geoData.state) this.form.state = geoData.state;
+                if (geoData.pincode) this.form.pincode = geoData.pincode;
+            });
+        }
+    },
+    openAddAddressModal() {
+        this.editMode = false;
+        this.editingAddressId = null;
+        this.form = {
+            full_name: '',
+            phone: '',
+            email: '',
+            address_line1: '',
+            address_line2: '',
+            pincode: '',
+            city: 'Purnea',
+            state: 'Bihar',
+            address_type: 'home',
+            is_default: false
+        };
+        this.fetchLocationAddress();
+        this.showAddressModal = true;
+    },
+    openEditAddressModal(id, full_name, phone, email, line1, line2, city, state, pincode, type, is_default) {
+        this.editMode = true;
+        this.editingAddressId = id;
+        this.form = {
+            full_name: full_name || '',
+            phone: phone || '',
+            email: email || '',
+            address_line1: line1 || '',
+            address_line2: line2 || '',
+            city: city || 'Purnea',
+            state: state || 'Bihar',
+            pincode: pincode || '',
+            address_type: type || 'home',
+            is_default: is_default || false
+        };
+        this.showAddressModal = true;
+    },
+    resetForm() {
+        this.editMode = false;
+        this.editingAddressId = null;
+    }
+}" class="space-y-6">
+
+    <!-- Page Header Card -->
+    <div class="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <span class="text-xs text-[var(--color-primary)] font-bold uppercase tracking-wider">Account Dashboard</span>
+            <h1 class="text-2xl font-extrabold text-gray-900 font-outfit mt-1">My Saved Addresses</h1>
+            <p class="text-xs text-gray-400 mt-1">Manage your shipping and delivery locations for faster checkout.</p>
+        </div>
+        <button type="button" @click="openAddAddressModal()" class="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-sm transition flex items-center gap-1.5">
+            <i data-lucide="plus" class="w-4 h-4"></i> Add New Address
+        </button>
+    </div>
+
+    <!-- Addresses Listing Grid Container -->
+    <div id="address-grid" class="mt-6">
+        {% include 'partials/address_grid.html' with addresses=addresses %}
+    </div>
+
+    <!-- Modal: Add / Edit Address Modal -->
+    <template x-teleport="body">
+        <div x-show="showAddressModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm" x-transition>
+            <div class="bg-white w-full max-w-lg rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
+                <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                    <h3 class="font-bold text-gray-900 text-base font-outfit" x-text="editMode ? 'Edit Shipping Address' : 'Add New Shipping Address'"></h3>
+                    <button type="button" @click="showAddressModal = false" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+                
+                <form 
+                    hx-post="{% url 'save_address' %}"
+                    hx-target="#address-grid"
+                    hx-swap="innerHTML"
+                    @htmx:after-request="showAddressModal = false; resetForm()"
+                    class="space-y-4 text-xs">
+                    {% csrf_token %}
+                    <input type="hidden" name="address_id" :value="editingAddressId">
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-bold text-gray-700 mb-1">Receiver's Name *</label>
+                            <input type="text" name="full_name" x-model="form.full_name" required placeholder="Full Name" class="w-full p-3 bg-[var(--color-background)] border rounded-xl font-medium outline-none focus:bg-white focus:border-[var(--color-primary)] transition" />
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-700 mb-1">Phone Number *</label>
+                            <input type="tel" name="phone" x-model="form.phone" required placeholder="10-digit mobile number" class="w-full p-3 bg-[var(--color-background)] border rounded-xl font-medium outline-none focus:bg-white focus:border-[var(--color-primary)] transition" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Email Address *</label>
+                        <input type="email" name="email" x-model="form.email" required placeholder="name@example.com" class="w-full p-3 bg-[var(--color-background)] border rounded-xl font-medium outline-none focus:bg-white focus:border-[var(--color-primary)] transition" />
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Street Address *</label>
+                        <input type="text" name="address_line1" x-model="form.address_line1" required placeholder="Flat, House no., Building, Company, Apartment" class="w-full p-3 bg-[var(--color-background)] border rounded-xl font-medium outline-none focus:bg-white focus:border-[var(--color-primary)] transition" />
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Landmark / Address Line 2</label>
+                        <input type="text" name="address_line2" x-model="form.address_line2" placeholder="Landmark, Area, Sector (Optional)" class="w-full p-3 bg-[var(--color-background)] border rounded-xl font-medium outline-none focus:bg-white focus:border-[var(--color-primary)] transition" />
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block font-bold text-gray-700 mb-1">Pincode *</label>
+                            <input type="text" name="pincode" x-model="form.pincode" required placeholder="6-digit PIN" class="w-full p-3 bg-[var(--color-background)] border rounded-xl font-medium outline-none focus:bg-white focus:border-[var(--color-primary)] transition" />
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-700 mb-1">City / Town *</label>
+                            <input type="text" name="city" x-model="form.city" required placeholder="City name" class="w-full p-3 bg-[var(--color-background)] border rounded-xl font-medium outline-none focus:bg-white focus:border-[var(--color-primary)] transition" />
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-700 mb-1">State *</label>
+                            <input type="text" name="state" x-model="form.state" required placeholder="State name" class="w-full p-3 bg-[var(--color-background)] border rounded-xl font-medium outline-none focus:bg-white focus:border-[var(--color-primary)] transition" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Address Type</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-2 font-semibold text-gray-700 cursor-pointer">
+                                <input type="radio" name="address_type" value="home" x-model="form.address_type" class="w-4 h-4 text-[var(--color-primary)] focus:ring-[var(--color-primary)]" />
+                                <span>Home (All day delivery)</span>
+                            </label>
+                            <label class="flex items-center gap-2 font-semibold text-gray-700 cursor-pointer">
+                                <input type="radio" name="address_type" value="work" x-model="form.address_type" class="w-4 h-4 text-[var(--color-primary)] focus:ring-[var(--color-primary)]" />
+                                <span>Work (10 AM - 5 PM)</span>
+                            </label>
+                            <label class="flex items-center gap-2 font-semibold text-gray-700 cursor-pointer">
+                                <input type="radio" name="address_type" value="other" x-model="form.address_type" class="w-4 h-4 text-[var(--color-primary)] focus:ring-[var(--color-primary)]" />
+                                <span>Other</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 pt-2">
+                        <input type="checkbox" id="defaultAddr" name="is_default" value="true" x-model="form.is_default" class="w-4 h-4 text-[var(--color-primary)] rounded focus:ring-[var(--color-primary)]" />
+                        <label for="defaultAddr" class="font-bold text-gray-700 cursor-pointer">Set as default shipping address</label>
+                    </div>
+
+                    <button type="submit" class="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white font-bold py-3.5 rounded-xl text-xs shadow-md shadow-blue-500/20 transition">Save Address</button>
+                </form>
+            </div>
+        </div>
+    </template>
+
+</div>
+{% endblock %}

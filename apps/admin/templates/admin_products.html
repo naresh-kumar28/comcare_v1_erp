@@ -1,0 +1,155 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Products Catalog — ComCare Admin Panel{% endblock %}
+{% block header_title %}Products Catalog Management{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    
+    <!-- Header Bar & Add Product Trigger -->
+    <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h2 class="text-base font-bold text-gray-900 font-outfit flex items-center gap-2">
+                Catalog Inventory
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-red-50 text-[var(--color-primary)] border border-red-100">
+                    {{ total_products_count }} Total Products
+                </span>
+            </h2>
+            <p class="text-xs text-gray-500">Manage laptops, printer accessories, toners & CCTV security products</p>
+        </div>
+
+        <button hx-get="{% url 'admin_product_get_form' %}"
+                hx-target="#product-modal-container"
+                hx-swap="innerHTML"
+                @click="showProductModal = true"
+                class="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i> Add New Product
+        </button>
+    </div>
+
+    <!-- Filters & Search Bar -->
+    <div class="bg-white p-4 rounded-3xl border border-gray-200 shadow-sm flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4" x-data="{ currentFilter: '{{ current_filter|default:'all' }}' }">
+        
+        <!-- Status Pill Filters (HTMX Async + Alpine State) -->
+        <div class="flex flex-wrap gap-2 text-xs font-bold">
+            <button hx-get="{% url 'admin_products' %}?filter=all"
+                    hx-target="#products-table-body"
+                    hx-push-url="true"
+                    @click="currentFilter = 'all'"
+                    class="px-4 py-2 rounded-xl transition duration-200 whitespace-nowrap"
+                    :class="currentFilter === 'all' || !currentFilter ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                All Products ({{ total_products_count }})
+            </button>
+
+            <button hx-get="{% url 'admin_products' %}?filter=featured"
+                    hx-target="#products-table-body"
+                    hx-push-url="true"
+                    @click="currentFilter = 'featured'"
+                    class="px-4 py-2 rounded-xl transition duration-200 whitespace-nowrap"
+                    :class="currentFilter === 'featured' ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                Featured ({{ featured_count }})
+            </button>
+
+            <button hx-get="{% url 'admin_products' %}?filter=bestseller"
+                    hx-target="#products-table-body"
+                    hx-push-url="true"
+                    @click="currentFilter = 'bestseller'"
+                    class="px-4 py-2 rounded-xl transition duration-200 whitespace-nowrap"
+                    :class="currentFilter === 'bestseller' ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                Best Seller ({{ bestseller_count }})
+            </button>
+
+            <button hx-get="{% url 'admin_products' %}?filter=newarrival"
+                    hx-target="#products-table-body"
+                    hx-push-url="true"
+                    @click="currentFilter = 'newarrival'"
+                    class="px-4 py-2 rounded-xl transition duration-200 whitespace-nowrap"
+                    :class="currentFilter === 'newarrival' ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                New Arrival ({{ newarrival_count }})
+            </button>
+
+            <button hx-get="{% url 'admin_products' %}?filter=active"
+                    hx-target="#products-table-body"
+                    hx-push-url="true"
+                    @click="currentFilter = 'active'"
+                    class="px-4 py-2 rounded-xl transition duration-200 whitespace-nowrap"
+                    :class="currentFilter === 'active' ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                Active Only ({{ active_count }})
+            </button>
+        </div>
+
+        <!-- Live Search Input (HTMX) -->
+        <div class="relative min-w-[260px]">
+            <input type="text"
+                   name="q"
+                   value="{{ q }}"
+                   placeholder="Search product title, SKU, brand..."
+                   hx-get="{% url 'admin_products' %}"
+                   hx-trigger="keyup changed delay:350ms, search"
+                   hx-target="#products-table-body"
+                   class="w-full pl-9 pr-4 py-2.5 bg-[var(--color-background)] border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-[var(--color-primary)] focus:bg-white transition">
+            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-3"></i>
+        </div>
+
+    </div>
+
+    <!-- Product Table -->
+    <div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider border-b border-gray-200">
+                    <tr>
+                        <th class="p-4">Product Info & SKU</th>
+                        <th class="p-4">Category & Brand</th>
+                        <th class="p-4">Price & MRP</th>
+                        <th class="p-4">Stock Levels</th>
+                        <th class="p-4">Status & Flags</th>
+                        <th class="p-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="products-table-body" class="divide-y divide-gray-100 text-gray-700">
+                    {% include 'partials/admin_product_table_body.html' %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls (HTMX Async) -->
+        {% if products.has_other_pages %}
+        <div class="p-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+            <div>
+                Showing Page <span class="font-bold text-gray-900">{{ products.number }}</span> of <span class="font-bold text-gray-900">{{ products.paginator.num_pages }}</span>
+            </div>
+            <div class="flex items-center gap-2 font-bold">
+                {% if products.has_previous %}
+                    <button hx-get="?page={{ products.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if current_filter %}&filter={{ current_filter }}{% endif %}"
+                            hx-target="#products-table-body"
+                            hx-push-url="true"
+                            class="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition">
+                        &laquo; Previous
+                    </button>
+                {% endif %}
+                
+                {% if products.has_next %}
+                    <button hx-get="?page={{ products.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if current_filter %}&filter={{ current_filter }}{% endif %}"
+                            hx-target="#products-table-body"
+                            hx-push-url="true"
+                            class="px-3 py-1.5 rounded-xl bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition">
+                        Next &raquo;
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block modal %}
+<!-- Dynamic Modal Container for Add/Edit Product (Root Body Level for 100% Fullscreen Viewport Overlay) -->
+<div x-show="showProductModal" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-gray-900/70 backdrop-blur-md">
+    <div id="product-modal-container" class="w-full max-w-3xl">
+        {% include 'partials/admin_product_form.html' with product=None %}
+    </div>
+</div>
+{% endblock %}

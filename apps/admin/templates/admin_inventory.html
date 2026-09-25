@@ -1,0 +1,95 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Inventory Control — ComCare Admin Panel{% endblock %}
+{% block header_title %}Stock & Inventory Management{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    
+    {% include 'partials/admin_inventory_metrics.html' %}
+
+    <!-- Inventory Stock Table -->
+    <div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden p-6 space-y-4">
+        <h3 class="font-bold text-gray-900 text-base font-outfit">Stock Inventory Audit</h3>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider border-b">
+                    <tr>
+                        <th class="p-3">Product Name & SKU</th>
+                        <th class="p-3">Total Qty</th>
+                        <th class="p-3">Stock Status</th>
+                        <th class="p-3">Selling Price</th>
+                        <th class="p-3 text-right">Quick Stock Update</th>
+                    </tr>
+                </thead>
+                <tbody id="inventory-table-body" class="divide-y divide-gray-100 text-gray-700">
+                    {% include 'partials/admin_inventory_table_body.html' %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        {% if products.has_other_pages %}
+        <div class="p-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+            <div>
+                Showing Page <span class="font-bold text-gray-900">{{ products.number }}</span> of <span class="font-bold text-gray-900">{{ products.paginator.num_pages }}</span>
+            </div>
+            <div class="flex items-center gap-2 font-bold">
+                {% if products.has_previous %}
+                    <button hx-get="?page={{ products.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if current_filter %}&filter={{ current_filter }}{% endif %}"
+                            hx-target="#inventory-table-body"
+                            hx-push-url="true"
+                            class="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition">
+                        &laquo; Previous
+                    </button>
+                {% endif %}
+                
+                {% if products.has_next %}
+                    <button hx-get="?page={{ products.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if current_filter %}&filter={{ current_filter }}{% endif %}"
+                            hx-target="#inventory-table-body"
+                            hx-push-url="true"
+                            class="px-3 py-1.5 rounded-xl bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition">
+                        Next &raquo;
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+document.body.addEventListener('updateInventoryMetrics', function(evt) {
+    const data = evt.detail;
+    if (!data) return;
+    
+    // Update Top Metric Cards
+    const totalEl = document.getElementById('inv-total-products');
+    if (totalEl) totalEl.innerText = data.total_products + ' Products';
+    
+    const unitsEl = document.getElementById('inv-total-units');
+    if (unitsEl) unitsEl.innerText = data.total_units + ' Units';
+    
+    const lowEl = document.getElementById('inv-low-stock');
+    if (lowEl) lowEl.innerText = data.lowstock + ' Products';
+    
+    const outEl = document.getElementById('inv-out-of-stock');
+    if (outEl) outEl.innerText = data.outofstock + ' Products';
+
+    // Update Filter Pill Counts
+    const pillAll = document.getElementById('inv-pill-all');
+    if (pillAll) pillAll.innerText = '(' + data.total_products + ')';
+    
+    const pillIn = document.getElementById('inv-pill-instock');
+    if (pillIn) pillIn.innerText = '(' + data.instock + ')';
+    
+    const pillLow = document.getElementById('inv-pill-lowstock');
+    if (pillLow) pillLow.innerText = '(' + data.lowstock + ')';
+    
+    const pillOut = document.getElementById('inv-pill-outofstock');
+    if (pillOut) pillOut.innerText = '(' + data.outofstock + ')';
+});
+</script>
+{% endblock %}

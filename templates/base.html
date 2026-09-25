@@ -1,0 +1,166 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[var(--color-background)] text-[var(--color-text-primary)] antialiased selection:bg-[var(--color-primary)] selection:text-white">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ComCare — E-Commerce & Repair Services | Greater Noida, UP{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}ComCare offers laptop sales & repair, printer servicing, CCTV security installation, and high-quality accessories in Greater Noida, UP. 10+ years of trusted service.{% endblock %}">
+    <!-- favicon -->
+    <link rel="icon" type="icon/svg" href="{% static 'images/favicon/favicon.png' %}">
+    <!-- Theme Toggle Initialization Script (prevents flashing, defaults to light) -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Centralized Design System CSS -->
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/utilities.css' %}">
+
+    <!-- Tailwind CSS v3 CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: 'var(--color-accent)',
+                            100: 'var(--color-brand-100)',
+                            500: 'var(--color-primary)',
+                            600: 'var(--color-primary-hover)',
+                            700: 'var(--color-secondary)',
+                        },
+                        bgmain: 'var(--color-background)',
+                        bordergray: 'var(--color-border)',
+                    },
+                    fontFamily: {
+                        sans: ['var(--font-primary)', 'sans-serif'],
+                        outfit: ['var(--font-heading)', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'xl': 'var(--radius-xl)',
+                        '2xl': 'var(--radius-2xl)',
+                    },
+                    keyframes: {
+                        shimmer: {
+                            '100%': { transform: 'translateX(100%)' },
+                        }
+                    },
+                    animation: {
+                        shimmer: 'shimmer 1.5s infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- HTMX CDN -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
+    <!-- Alpine.js CDN -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="flex flex-col min-h-full font-sans bg-[var(--color-background)] text-[var(--color-text-primary)]" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    
+    <!-- Header -->
+    {% block header %}
+        {% include 'partials/header.html' %}
+    {% endblock %}
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% include 'partials/footer.html' %}
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2.5 pointer-events-none"></div>
+
+    <!-- Re-initialize Lucide Icons after DOM, Alpine, and HTMX updates -->
+    <script>
+        function refreshIcons() {
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
+        }
+        window.refreshIcons = refreshIcons;
+        document.addEventListener('DOMContentLoaded', refreshIcons);
+        window.addEventListener('load', refreshIcons);
+        document.addEventListener('alpine:init', refreshIcons);
+        document.addEventListener('alpine:initialized', refreshIcons);
+        document.addEventListener('htmx:afterSettle', refreshIcons);
+
+        // Global Reverse Geocoding Helper (OpenStreetMap Nominatim)
+        if (typeof window._lastNominatimReqTime === 'undefined') {
+            window._lastNominatimReqTime = 0;
+        }
+        function fetchNominatimReverseAddress(onSuccess) {
+            if (!("geolocation" in navigator)) return;
+
+            const now = Date.now();
+            if (now - window._lastNominatimReqTime < 1000) return; // 1-second throttle guard
+
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    window._lastNominatimReqTime = Date.now();
+
+                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&email=support@comcareit.com`, {
+                        headers: {
+                            'Accept-Language': 'en'
+                        }
+                    })
+                    .then(res => res.ok ? res.json() : null)
+                    .then(data => {
+                        if (!data || !data.address) return;
+                        const a = data.address;
+
+                        const roadArr = [
+                            a.house_number,
+                            a.road,
+                            a.suburb || a.neighbourhood || a.residential
+                        ].filter(Boolean);
+
+                        const streetAddress = roadArr.length > 0
+                            ? roadArr.join(', ')
+                            : (data.display_name ? data.display_name.split(',').slice(0, 2).join(',').trim() : '');
+
+                        const city = a.city || a.town || a.village || a.municipality || a.county || '';
+                        const state = a.state || '';
+                        const pincode = a.postcode || '';
+
+                        if (typeof onSuccess === 'function') {
+                            onSuccess({ streetAddress, city, state, pincode });
+                        }
+                    })
+                    .catch(() => {});
+                },
+                () => {},
+                { timeout: 8000, maximumAge: 60000 }
+            );
+        }
+        window.fetchNominatimReverseAddress = fetchNominatimReverseAddress;
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

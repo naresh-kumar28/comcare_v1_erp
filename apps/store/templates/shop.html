@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+
+{% block title %}Shop Catalog — ComCare | Laptops, Printers, CCTV{% endblock %}
+
+{% block content %}
+<!-- Shop Header Banner -->
+<div class="bg-gradient-to-r from-gray-900 via-red-950 to-gray-900 text-white py-10 border-b border-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+            <div class="text-xs text-red-400 font-bold uppercase tracking-wider">Store Catalog</div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold font-outfit text-white">All Products & Accessories</h1>
+        </div>
+        
+        <!-- Live HTMX Search Input -->
+        <form method="GET" action="{% url 'shop' %}" class="w-full md:w-96 relative">
+            <!-- Keep active category and brand filters as hidden inputs -->
+            {% for cat in current_filters.selected_cats %}
+            <input type="hidden" name="cat" value="{{ cat }}">
+            {% endfor %}
+            {% for brand in current_filters.selected_brands %}
+            <input type="hidden" name="brand" value="{{ brand }}">
+            {% endfor %}
+            {% if current_filters.min_price %}
+            <input type="hidden" name="min_price" value="{{ current_filters.min_price }}">
+            {% endif %}
+            {% if current_filters.max_price %}
+            <input type="hidden" name="max_price" value="{{ current_filters.max_price }}">
+            {% endif %}
+            {% if current_filters.sort %}
+            <input type="hidden" name="sort" value="{{ current_filters.sort }}">
+            {% endif %}
+            
+            <input 
+                type="text" 
+                name="q"
+                value="{{ current_filters.q }}"
+                placeholder="Search products by title, SKU or brand..." 
+                class="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-xl text-xs text-white placeholder-gray-400 focus:outline-none focus:bg-white focus:text-gray-900 focus:placeholder-gray-500 transition"
+            >
+            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
+        </form>
+    </div>
+</div>
+
+<!-- Main Shop Content Grid -->
+<div class="py-10 bg-[var(--color-background)]" x-data="{ isFiltering: false, mobileFiltersOpen: false }">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Sidebar Filters Container -->
+            <!-- Mobile Overlay Back-drop -->
+            <div 
+                x-show="mobileFiltersOpen" 
+                class="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300"
+                x-transition:enter="ease-out duration-300"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-200"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                @click="mobileFiltersOpen = false"
+                style="display: none;"
+            ></div>
+
+            <!-- Filters Drawer / Sidebar -->
+            <div 
+                class="lg:col-span-3 fixed lg:static inset-y-0 left-0 w-80 lg:w-auto z-50 lg:z-0 overflow-y-auto lg:overflow-visible transition-transform duration-300 transform lg:transform-none lg:block"
+                :class="mobileFiltersOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+            >
+                <form id="filter-form" method="GET" action="{% url 'shop' %}" @submit="isFiltering = true" class="bg-white p-6 h-full lg:h-auto rounded-none lg:rounded-2xl border-none lg:border lg:border-gray-200 shadow-none lg:shadow-sm space-y-6 lg:shadow-sm">
+                    <!-- Keep active search query 'q' -->
+                    <input type="hidden" name="q" value="{{ current_filters.q }}">
+                    <!-- Keep active sort parameter -->
+                    <input type="hidden" name="sort" id="sort-hidden-input" value="{{ current_filters.sort }}">
+
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+                        <h3 class="font-bold text-gray-900 text-sm font-outfit flex items-center gap-2">
+                            <i data-lucide="sliders-horizontal" class="w-4 h-4 text-[var(--color-primary)]"></i> Filter Products
+                        </h3>
+                        <div class="flex items-center gap-3">
+                            <a href="{% url 'shop' %}" class="text-xs font-semibold text-[var(--color-primary)] hover:underline">Reset</a>
+                            <button type="button" @click="mobileFiltersOpen = false" class="lg:hidden p-1 rounded-lg text-gray-400 hover:bg-gray-100">
+                                <i data-lucide="x" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider">Category</h4>
+                        <div class="space-y-2 text-xs text-gray-700">
+                            {% for category in categories %}
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-[var(--color-primary)]">
+                                <input 
+                                    type="checkbox" 
+                                    name="cat" 
+                                    value="{{ category.slug }}"
+                                    {% if category.slug in current_filters.selected_cats %}checked{% endif %}
+                                    @change="isFiltering = true; setTimeout(() => document.getElementById('filter-form').submit(), 100)"
+                                    class="rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                                >
+                                <span>{{ category.name }} ({{ category.product_count }})</span>
+                            </label>
+                            {% empty %}
+                            <p class="text-gray-400">No categories found</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Brand Filter -->
+                    <div class="space-y-3 border-t border-gray-100 pt-4">
+                        <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider">Brand</h4>
+                        <div class="space-y-2 text-xs text-gray-700">
+                            {% for brand in brands %}
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-[var(--color-primary)]">
+                                <input 
+                                    type="checkbox" 
+                                    name="brand" 
+                                    value="{{ brand }}"
+                                    {% if brand in current_filters.selected_brands %}checked{% endif %}
+                                    @change="isFiltering = true; setTimeout(() => document.getElementById('filter-form').submit(), 100)"
+                                    class="rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                                >
+                                <span>{{ brand }}</span>
+                            </label>
+                            {% empty %}
+                            <p class="text-gray-400">No brands found</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Price Range Slider -->
+                    <div class="space-y-3 border-t border-gray-100 pt-4">
+                        <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider">Price Range (₹)</h4>
+                        <div class="flex items-center gap-2">
+                            <input 
+                                type="number" 
+                                name="min_price" 
+                                placeholder="Min" 
+                                value="{{ current_filters.min_price }}" 
+                                class="w-full px-3 py-1.5 bg-[var(--color-background)] border border-gray-200 rounded-lg text-xs"
+                            >
+                            <span class="text-gray-400 text-xs">to</span>
+                            <input 
+                                type="number" 
+                                name="max_price" 
+                                placeholder="Max" 
+                                value="{{ current_filters.max_price }}" 
+                                class="w-full px-3 py-1.5 bg-[var(--color-background)] border border-gray-200 rounded-lg text-xs"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Stock Status Filter -->
+                    <div class="space-y-3 border-t border-gray-100 pt-4">
+                        <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider">Availability</h4>
+                        <div class="space-y-2 text-xs text-gray-700">
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-emerald-600">
+                                <input 
+                                    type="checkbox" 
+                                    name="stock" 
+                                    value="in_stock"
+                                    {% if 'in_stock' in current_filters.selected_stock %}checked{% endif %}
+                                    @change="isFiltering = true; setTimeout(() => document.getElementById('filter-form').submit(), 100)"
+                                    class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                                >
+                                <span>In Stock</span>
+                            </label>
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-amber-600">
+                                <input 
+                                    type="checkbox" 
+                                    name="stock" 
+                                    value="low_stock"
+                                    {% if 'low_stock' in current_filters.selected_stock %}checked{% endif %}
+                                    @change="isFiltering = true; setTimeout(() => document.getElementById('filter-form').submit(), 100)"
+                                    class="rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                                >
+                                <span>Low Stock</span>
+                            </label>
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-red-600">
+                                <input 
+                                    type="checkbox" 
+                                    name="stock" 
+                                    value="out_of_stock"
+                                    {% if 'out_of_stock' in current_filters.selected_stock %}checked{% endif %}
+                                    @change="isFiltering = true; setTimeout(() => document.getElementById('filter-form').submit(), 100)"
+                                    class="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                >
+                                <span>Out of Stock</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button 
+                        type="submit"
+                        class="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white py-2.5 rounded-xl font-bold text-xs transition shadow-sm"
+                    >
+                        Apply Filters
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right Catalog Content Grid -->
+            <div class="lg:col-span-9 space-y-6">
+                
+                <!-- Sort & Result Controls Header -->
+                <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
+                    <div class="flex items-center justify-between w-full sm:w-auto">
+                        <div class="text-gray-600">
+                            {% if total_products > 0 %}
+                            Showing <span class="font-bold text-gray-900">{{ page_obj.start_index }}–{{ page_obj.end_index }}</span> of <span class="font-bold text-[var(--color-primary)]">{{ total_products }}</span> products
+                            {% else %}
+                            No products found
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Toggle Button for Mobile Filters -->
+                        <button 
+                            @click="mobileFiltersOpen = true"
+                            class="lg:hidden flex items-center gap-1.5 px-3 py-2 bg-[var(--color-background)] border border-gray-200 hover:border-[var(--color-primary)] rounded-xl font-bold text-gray-800 text-xs transition shadow-sm"
+                        >
+                            <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-[var(--color-primary)]"></i> Filters
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0">
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <label class="text-gray-500 font-semibold shrink-0">Sort By:</label>
+                            <select 
+                                @change="document.getElementById('sort-hidden-input').value = $event.target.value; isFiltering = true; setTimeout(() => document.getElementById('filter-form').submit(), 100)"
+                                class="w-full sm:w-auto px-3 py-2 bg-[var(--color-background)] border border-gray-200 rounded-xl font-semibold text-gray-800 focus:outline-none focus:border-[var(--color-primary)]"
+                            >
+                                <option value="" {% if not current_filters.sort or current_filters.sort == 'all' %}selected{% endif %}>All Products</option>
+                                <option value="featured" {% if current_filters.sort == 'featured' %}selected{% endif %}>Featured Products</option>
+                                <option value="new_arrivals" {% if current_filters.sort == 'new_arrivals' %}selected{% endif %}>New Arrivals</option>
+                                <option value="best_sellers" {% if current_filters.sort == 'best_sellers' %}selected{% endif %}>Best Sellers</option>
+                                <option value="price_asc" {% if current_filters.sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                                <option value="price_desc" {% if current_filters.sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                                <option value="rating" {% if current_filters.sort == 'rating' %}selected{% endif %}>Highest Rated</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skeleton Shimmer Placeholder Grid during Filter Changes -->
+                <template x-if="isFiltering">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% include 'partials/skeleton_product_card.html' %}
+                        {% include 'partials/skeleton_product_card.html' %}
+                        {% include 'partials/skeleton_product_card.html' %}
+                        {% include 'partials/skeleton_product_card.html' %}
+                        {% include 'partials/skeleton_product_card.html' %}
+                        {% include 'partials/skeleton_product_card.html' %}
+                    </div>
+                </template>
+
+                <!-- Product Listing Grid -->
+                <template x-if="!isFiltering">
+                    <div class="space-y-6">
+                        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {% for product in page_obj %}
+                                {% if forloop.last and page_obj.has_next %}
+                                    <div 
+                                        class="contents"
+                                        hx-get="{% url 'shop' %}?page={{ page_obj.next_page_number }}{% if url_params %}&{{ url_params }}{% endif %}"
+                                        hx-trigger="revealed"
+                                        hx-swap="outerHTML"
+                                        hx-indicator="#infinite-spinner"
+                                    >
+                                        {% include 'partials/product_card.html' with product=product %}
+                                    </div>
+                                {% else %}
+                                    {% include 'partials/product_card.html' with product=product %}
+                                {% endif %}
+                            {% empty %}
+                                <div class="col-span-full text-center py-16 bg-white rounded-2xl border border-gray-200 shadow-sm">
+                                    <i data-lucide="package-search" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i>
+                                    <p class="text-gray-500 font-medium">No products found matching your filters.</p>
+                                    <a href="{% url 'shop' %}" class="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--color-primary)] hover:underline mt-2">
+                                        Clear all filters
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Infinite Scroll Loading Spinner -->
+                        <div id="infinite-spinner" class="htmx-indicator flex justify-center py-6">
+                            <div class="flex items-center gap-2 text-gray-500 font-semibold text-xs">
+                                <svg class="animate-spin h-5 w-5 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>Loading more products...</span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

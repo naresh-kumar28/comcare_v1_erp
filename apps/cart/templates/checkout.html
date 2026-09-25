@@ -1,0 +1,436 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout — ComCare{% endblock %}
+
+{% block header %}
+    {% include 'base_cart_header.html' with active_step=2 page_title="Shipping & Payment Details" back_url="/cart/" %}
+{% endblock %}
+
+{% block content %}
+<div class="py-0 bg-[var(--color-background)] min-h-screen pb-24 lg:pb-0" 
+     x-data="checkoutApp()"
+     x-init="init()">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left: Checkout Forms -->
+            <div class="lg:col-span-8 space-y-6">
+                
+                <!-- Section 1: Shipping Address Selection -->
+                <div class="bg-white dark:bg-gray-800/90 p-6 sm:p-8 rounded-3xl border border-gray-200 dark:border-gray-700/80 shadow-sm space-y-6">
+                    <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-700/60 pb-4">
+                        <h2 class="text-lg font-extrabold text-gray-900 dark:text-white font-outfit flex items-center gap-2">
+                            <span><i data-lucide="map-pin" class="w-5 h-5 text-[var(--color-primary)] inline"></i> Delivery Address (India Only)</span>
+                        </h2>
+                        <button type="button" @click="openAddAddressModal()" class="text-xs font-bold text-[var(--color-primary)] hover:underline flex items-center gap-1">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add New Address
+                        </button>
+                    </div>
+
+                    <!-- Existing Address Cards Radio List Container -->
+                    <div id="checkout-address-list">
+                        {% include 'partials/checkout_address_list.html' with addresses=addresses %}
+                    </div>
+                </div>
+
+                <!-- Section 2: Payment Method Selection -->
+                <div class="bg-white dark:bg-gray-800/90 p-6 sm:p-8 rounded-3xl border border-gray-200 dark:border-gray-700/80 shadow-sm space-y-6">
+                    <h2 class="text-lg font-extrabold text-gray-900 dark:text-white font-outfit flex items-center gap-2 border-b border-gray-100 dark:border-gray-700/60 pb-3">
+                        <i data-lucide="credit-card" class="w-5 h-5 text-[var(--color-primary)] inline"></i> Payment Option
+                    </h2>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        
+                        <!-- Razorpay Online -->
+                        <label 
+                            @click="paymentMethod = 'razorpay'"
+                            class="p-5 rounded-2xl border-2 cursor-pointer transition flex items-start gap-4 bg-white dark:bg-gray-800/50 relative"
+                            :class="paymentMethod === 'razorpay' ? 'border-[var(--color-primary)] bg-red-50/10 dark:bg-red-950/40 shadow-sm' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
+                        >
+                            <input type="radio" name="payment_method" value="razorpay" :checked="paymentMethod === 'razorpay'" class="sr-only">
+                            <div class="mt-1 shrink-0 flex items-center justify-center w-5 h-5 rounded-full border-2 transition"
+                                 :class="paymentMethod === 'razorpay' ? 'border-[var(--color-primary)]' : 'border-gray-300 dark:border-gray-600'">
+                                 <div class="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)]" x-show="paymentMethod === 'razorpay'"></div>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-extrabold text-sm text-gray-900 dark:text-white font-outfit">Razorpay Online</span>
+                                    <span class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-800/50">Recommended</span>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Pay securely via UPI, Credit/Debit Card, NetBanking, Wallet or EMI.</p>
+                            </div>
+                        </label>
+
+                        <!-- Cash on Delivery -->
+                        <label 
+                            @click="paymentMethod = 'cod'"
+                            class="p-5 rounded-2xl border-2 cursor-pointer transition flex items-start gap-4 bg-white dark:bg-gray-800/50 relative"
+                            :class="paymentMethod === 'cod' ? 'border-[var(--color-primary)] bg-red-50/10 dark:bg-red-950/40 shadow-sm' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
+                        >
+                            <input type="radio" name="payment_method" value="cod" :checked="paymentMethod === 'cod'" class="sr-only">
+                            <div class="mt-1 shrink-0 flex items-center justify-center w-5 h-5 rounded-full border-2 transition"
+                                 :class="paymentMethod === 'cod' ? 'border-[var(--color-primary)]' : 'border-gray-300 dark:border-gray-600'">
+                                 <div class="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)]" x-show="paymentMethod === 'cod'"></div>
+                            </div>
+                            <div class="space-y-1">
+                                <span class="font-extrabold text-sm text-gray-900 dark:text-white font-outfit">Cash on Delivery (COD)</span>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Pay cash or UPI to delivery partner upon physical arrival.</p>
+                            </div>
+                        </label>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right: Final Order Summary & Place Order Action -->
+            <div class="lg:col-span-4 space-y-6">
+                
+                <div class="bg-white dark:bg-gray-800/90 p-6 rounded-3xl border border-gray-200 dark:border-gray-700/80 shadow-sm space-y-6">
+                    <h3 class="font-bold text-gray-900 dark:text-white text-base font-outfit border-b border-gray-100 dark:border-gray-700/60 pb-3">Final Order Review</h3>
+
+                    <!-- Order Items Small Preview -->
+                    <div class="space-y-3 border-b border-gray-100 dark:border-gray-700/60 pb-4 text-xs max-h-48 overflow-y-auto pr-1">
+                        {% for item in cart_items %}
+                        <div class="flex items-center justify-between text-gray-700 dark:text-gray-300 gap-2">
+                            <span class="font-semibold truncate flex-1">{{ item.product.title }} <span class="text-gray-400 dark:text-gray-500 font-normal">(x{{ item.quantity }})</span></span>
+                            <span class="font-bold text-gray-900 dark:text-white shrink-0">₹{{ item.total_price|floatformat:2 }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Price Calculations -->
+                    <div class="space-y-3 text-xs">
+                        <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                            <span>Item Subtotal ({{ quantity }})</span>
+                            <span class="font-bold text-gray-900 dark:text-white">₹{{ total|floatformat:2 }}</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                            <span>GST Tax (18%)</span>
+                            <span class="font-bold text-gray-900 dark:text-white">+₹{{ tax|floatformat:2 }}</span>
+                        </div>
+                        
+                        {% if coupon_code %}
+                        <div class="flex items-center justify-between text-emerald-600 dark:text-emerald-400 font-bold">
+                            <span class="flex items-center gap-1">
+                                <i data-lucide="tag" class="w-3.5 h-3.5 fill-current"></i> {{ coupon_code }}
+                            </span>
+                            <span>-₹{{ coupon_discount|floatformat:2 }}</span>
+                        </div>
+                        {% endif %}
+
+                        <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                            <span>Shipping Fee</span>
+                            <span class="font-bold {% if shipping_cost == 0 %}text-emerald-600 dark:text-emerald-400{% else %}text-gray-900 dark:text-white{% endif %}">
+                                {% if shipping_cost == 0 %}FREE{% else %}₹{{ shipping_cost|floatformat:2 }}{% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="border-t border-gray-100 dark:border-gray-700/60 pt-4 flex justify-between items-baseline">
+                            <span class="font-extrabold text-gray-900 dark:text-white text-base font-outfit">Grand Total</span>
+                            <span class="font-extrabold text-2xl text-[var(--color-primary)] font-outfit">₹{{ grand_total|floatformat:2 }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Error message alert if any -->
+                    <div x-show="errorMessage" x-cloak class="p-3 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-xl text-xs font-semibold border border-red-100 dark:border-red-900/50">
+                        <span x-text="errorMessage"></span>
+                    </div>
+
+                    <button type="button"
+                            @click="submitOrder()"
+                            :disabled="isSubmitting"
+                            class="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white py-3.5 px-4 rounded-xl font-bold text-sm text-center shadow-md shadow-blue-500/20 transition flex items-center justify-center gap-2">
+                        <span x-show="!isSubmitting">Place Order</span>
+                        <span x-show="isSubmitting" class="flex items-center gap-2">
+                            <svg class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
+                            Processing...
+                        </span>
+                    </button>
+
+                    <div class="text-center text-[10px] text-gray-400 dark:text-gray-500">
+                        By placing order you agree to ComCare Terms & Privacy Policy.
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Mobile Sticky Bottom Bar -->
+    <div id="mobile-checkout-sticky-bar" 
+         class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 p-4 z-50 flex items-center justify-between shadow-[0_-4px_12px_rgba(0,0,0,0.08)] lg:hidden">
+        <div class="flex flex-col">
+            <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Grand Total</span>
+            <span class="font-extrabold text-xl text-[var(--color-primary)] font-outfit">₹{{ grand_total|floatformat:2 }}</span>
+        </div>
+        <button type="button" @click="submitOrder()" :disabled="isSubmitting" class="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white py-3 px-6 rounded-xl font-bold text-xs shadow-sm transition">
+            <span x-show="!isSubmitting">Place Order</span>
+            <span x-show="isSubmitting">Processing...</span>
+        </button>
+    </div>
+
+    <!-- Modal: Add / Edit Address (Alpine.js Toggled) -->
+    <template x-teleport="body">
+        <div x-show="showAddressModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 dark:bg-gray-950/80 backdrop-blur-sm">
+            <div class="bg-white dark:bg-gray-800 w-full max-w-lg rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative border border-gray-100 dark:border-gray-700">
+                <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700/60 pb-3">
+                    <h3 class="font-bold text-gray-900 dark:text-white text-base font-outfit" x-text="modalMode === 'edit' ? 'Edit Shipping Address' : 'Add New Shipping Address'"></h3>
+                    <button type="button" @click="showAddressModal = false" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+                
+                <form 
+                    hx-post="{% url 'save_address' %}"
+                    hx-target="#checkout-address-list"
+                    hx-swap="innerHTML"
+                    @htmx:after-request="showAddressModal = false; if ($event.detail.successful) { const newId = $event.detail.xhr.getResponseHeader('X-New-Address-Id'); if (newId) selectedAddress = newId; }"
+                    class="space-y-4 text-xs">
+                    {% csrf_token %}
+                    <input type="hidden" name="view_type" value="checkout">
+                    <input type="hidden" name="address_id" :value="editingAddressId">
+
+                    <div>
+                        <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+                        <input type="text" name="full_name" x-model="formFullName" required placeholder="e.g. Navratan Kumar" class="w-full p-3 bg-[var(--color-background)] dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[var(--color-primary)]">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Mobile Number *</label>
+                            <input type="tel" name="phone" x-model="formPhone" required placeholder="7782933700" class="w-full p-3 bg-[var(--color-background)] dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[var(--color-primary)]">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Email Address *</label>
+                            <input type="email" name="email" x-model="formEmail" required placeholder="name@example.com" class="w-full p-3 bg-[var(--color-background)] dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[var(--color-primary)]">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Address (House No, Street, Landmark)</label>
+                        <input type="text" name="address_line1" x-model="formAddress1" required placeholder="12A, Knowledge Park-III, Greater Noida" class="w-full p-3 bg-[var(--color-background)] dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[var(--color-primary)]">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Landmark / Address Line 2</label>
+                        <input type="text" name="address_line2" x-model="formAddress2" placeholder="Landmark, Sector (Optional)" class="w-full p-3 bg-[var(--color-background)] dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[var(--color-primary)]">
+                    </div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Pincode *</label>
+                            <input type="text" name="pincode" x-model="formPincode" required placeholder="854301" class="w-full p-3 bg-[var(--color-background)] dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[var(--color-primary)]">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">City / Town *</label>
+                            <input type="text" name="city" x-model="formCity" required placeholder="Purnea" class="w-full p-3 bg-[var(--color-background)] dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[var(--color-primary)]">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">State *</label>
+                            <input type="text" name="state" x-model="formState" required placeholder="Bihar" class="w-full p-3 bg-[var(--color-background)] dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[var(--color-primary)]">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-4 pt-2">
+                        <div class="flex items-center gap-4">
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="radio" name="address_type" value="home" x-model="formAddressType">
+                                <span class="font-semibold text-gray-700 dark:text-gray-300">Home</span>
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="radio" name="address_type" value="work" x-model="formAddressType">
+                                <span class="font-semibold text-gray-700 dark:text-gray-300">Work</span>
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="radio" name="address_type" value="other" x-model="formAddressType">
+                                <span class="font-semibold text-gray-700 dark:text-gray-300">Other</span>
+                            </label>
+                        </div>
+
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" name="is_default" value="true" x-model="formIsDefault" class="rounded border-gray-300 dark:border-gray-700 text-[var(--color-primary)]">
+                            <span class="font-semibold text-gray-700 dark:text-gray-300">Default Address</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white font-bold py-3.5 rounded-xl shadow-md transition text-xs">
+                        Save & Select Address
+                    </button>
+                </form>
+            </div>
+        </div>
+    </template>
+</div>
+
+<!-- Razorpay Checkout SDK Script -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+
+    function checkoutApp() {
+        return {
+            selectedAddress: "{% if addresses.0 %}{{ addresses.0.id }}{% else %}{% endif %}",
+            paymentMethod: "razorpay",
+            showAddressModal: false,
+            modalMode: "add",
+            editingAddressId: null,
+
+            // Form inputs
+            formFullName: "",
+            formPhone: "",
+            formEmail: "",
+            formAddress1: "",
+            formAddress2: "",
+            formCity: "Purnea",
+            formState: "Bihar",
+            formPincode: "854301",
+            formAddressType: "home",
+            formIsDefault: false,
+
+            isSubmitting: false,
+            errorMessage: "",
+
+            init() {
+                // Set default selected address
+                {% for addr in addresses %}
+                {% if addr.is_default %}
+                this.selectedAddress = "{{ addr.id }}";
+                {% endif %}
+                {% endfor %}
+
+                // Request location permission & pre-fill address on page load
+                this.fetchLocationAddress();
+            },
+
+            fetchLocationAddress() {
+                fetchNominatimReverseAddress((geoData) => {
+                    if (geoData.streetAddress && !this.formAddress1) {
+                        this.formAddress1 = geoData.streetAddress;
+                    }
+                    if (geoData.city) this.formCity = geoData.city;
+                    if (geoData.state) this.formState = geoData.state;
+                    if (geoData.pincode) this.formPincode = geoData.pincode;
+                });
+            },
+
+            openAddAddressModal() {
+                this.modalMode = "add";
+                this.editingAddressId = null;
+                this.formFullName = "";
+                this.formPhone = "";
+                this.formEmail = "";
+                this.formAddress1 = "";
+                this.formAddress2 = "";
+                this.formCity = "Purnea";
+                this.formState = "Bihar";
+                this.formPincode = "854301";
+                this.formAddressType = "home";
+                this.formIsDefault = false;
+                this.showAddressModal = true;
+            },
+
+            openEditAddressModal(addrId, fullName, phone, email, line1, line2, city, state, pincode, type, isDefault) {
+                this.modalMode = "edit";
+                this.editingAddressId = addrId;
+                this.formFullName = fullName || "";
+                this.formPhone = phone || "";
+                this.formEmail = email || "";
+                this.formAddress1 = line1 || "";
+                this.formAddress2 = line2 || "";
+                this.formCity = city || "Purnea";
+                this.formState = state || "Bihar";
+                this.formPincode = pincode || "";
+                this.formAddressType = type || "home";
+                this.formIsDefault = !!isDefault;
+                this.showAddressModal = true;
+            },
+
+            submitOrder() {
+                if (!this.selectedAddress) {
+                    this.errorMessage = "Please select or add a delivery address first!";
+                    return;
+                }
+
+                this.errorMessage = "";
+                this.isSubmitting = true;
+
+                const formData = new FormData();
+                formData.append("address_id", this.selectedAddress);
+                formData.append("payment_method", this.paymentMethod);
+                formData.append("is_buy_now", "{% if is_buy_now %}1{% else %}0{% endif %}");
+
+                fetch("{% url 'place_order' %}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        window.location.href = data.redirect_url;
+                    } else if (data.status === "razorpay") {
+                        const options = {
+                            "key": data.key_id,
+                            "amount": data.amount,
+                            "currency": data.currency,
+                            "name": data.name,
+                            "description": data.description,
+                            "order_id": data.order_id,
+                            "handler": (response) => {
+                                fetch("{% url 'verify_payment' %}", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRFToken": "{{ csrf_token }}"
+                                    },
+                                    body: JSON.stringify({
+                                        razorpay_order_id: response.razorpay_order_id,
+                                        razorpay_payment_id: response.razorpay_payment_id,
+                                        razorpay_signature: response.razorpay_signature,
+                                        order_number: data.order_number
+                                    })
+                                })
+                                .then(vRes => vRes.json())
+                                .then(vData => {
+                                    if (vData.status === "success") {
+                                        window.location.href = vData.redirect_url;
+                                    } else {
+                                        this.errorMessage = vData.message || "Payment verification failed!";
+                                        this.isSubmitting = false;
+                                    }
+                                });
+                            },
+                            "prefill": {
+                                "name": data.prefill_name,
+                                "email": data.prefill_email,
+                                "contact": data.prefill_contact
+                            },
+                            "theme": {
+                                "color": "#2563EB"
+                            },
+                            "modal": {
+                                "ondismiss": () => {
+                                    this.isSubmitting = false;
+                                }
+                            }
+                        };
+                        const rzp = new Razorpay(options);
+                        rzp.open();
+                    } else {
+                        this.errorMessage = data.message || "Failed to place order.";
+                        this.isSubmitting = false;
+                    }
+                })
+                .catch(err => {
+                    this.errorMessage = "An unexpected error occurred. Please try again.";
+                    this.isSubmitting = false;
+                });
+            }
+        };
+    }
+</script>
+{% endblock %}

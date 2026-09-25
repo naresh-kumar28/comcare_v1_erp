@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart — ComCare{% endblock %}
+
+{% block header %}
+    {% include 'base_cart_header.html' with active_step=1 page_title="Your Shopping Cart" back_url="/store/" %}
+{% endblock %}
+
+{% block content %}
+<div class="py-0 bg-[var(--color-background)] min-h-screen" 
+     x-data="{ showSticky: true }"
+     x-init="
+         const observer = new IntersectionObserver((entries) => {
+             showSticky = !entries[0].isIntersecting;
+         }, { threshold: 0.02 });
+         observer.observe(document.querySelector('footer'));
+     ">
+    
+    <div id="cart-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+        {% include 'partials/cart_container.html' %}
+    </div>
+</div>
+{% endblock %}

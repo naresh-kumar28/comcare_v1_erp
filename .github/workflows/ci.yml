@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  test:
+    name: Test & Build
+    runs-on: ubuntu-latest
+    env:
+      DJANGO_DEBUG: 'True'
+      DJANGO_SECRET_KEY: 'ci-secret-key-placeholder'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run checks & tests
+        run: |
+          python manage.py check
+          python manage.py test
+          python manage.py collectstatic --noinput

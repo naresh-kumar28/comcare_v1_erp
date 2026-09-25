@@ -1,0 +1,218 @@
+{% if cart_items %}
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    
+    <!-- Left: Cart Items List -->
+    <div class="lg:col-span-8 space-y-4">
+        
+        {% for item in cart_items %}
+        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-4 w-full sm:w-auto">
+                <a href="{% url 'product_detail' item.product.slug %}" class="w-20 h-20 rounded-xl bg-[var(--color-background)] border border-gray-200 flex items-center justify-center shrink-0 hover:border-blue-400 transition">
+                    {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}" class="w-full h-full object-contain rounded-xl">
+                    {% else %}
+                    <div class="w-full h-full flex items-center justify-center text-gray-400 text-xs">No Image</div>
+                    {% endif %}
+                </a>
+                <div>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">{{ item.product.category.name }}</span>
+                    <h3 class="font-bold text-gray-900 text-sm font-outfit leading-snug hover:text-[var(--color-primary)] transition">
+                        <a href="{% url 'product_detail' item.product.slug %}">{{ item.product.title }}</a>
+                    </h3>
+                    <div class="text-xs text-emerald-600 font-semibold mt-1">{{ item.product.warranty }}</div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-t-0 pt-4 sm:pt-0 border-gray-100">
+                <!-- Qty -->
+                <div class="flex items-center border border-gray-200 rounded-xl bg-[var(--color-background)]">
+                    <button 
+                        hx-get="{% url 'remove_cart' item.product.id %}" 
+                        hx-target="#cart-container" 
+                        hx-swap="innerHTML" 
+                        class="px-2.5 py-1 text-gray-600 font-bold text-xs hover:bg-gray-200 transition rounded-l-xl"
+                    >-</button>
+                    <span class="px-3 text-xs font-bold">{{ item.quantity }}</span>
+                    <button 
+                        hx-get="{% url 'add_cart' item.product.id %}" 
+                        hx-target="#cart-container" 
+                        hx-swap="innerHTML" 
+                        class="px-2.5 py-1 text-gray-600 font-bold text-xs hover:bg-gray-200 transition rounded-r-xl"
+                    >+</button>
+                </div>
+                
+                <!-- Price -->
+                <div class="text-right">
+                    <div class="font-bold text-gray-900 text-base font-outfit">₹{{ item.total_price|floatformat:2 }}</div>
+                    <div class="text-[10px] text-gray-400 ">₹{{ item.product.selling_price|floatformat:2 }} Each</div>
+                </div>
+
+                <!-- Remove button -->
+                <button 
+                    hx-get="{% url 'remove_cart_item' item.product.id %}" 
+                    hx-target="#cart-container" 
+                    hx-swap="innerHTML" 
+                    class="text-gray-400 hover:text-red-500 transition p-1"
+                >
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <!-- Right: Order Summary Box -->
+    <div id="order-summary-card" class="lg:col-span-4 space-y-6">
+        
+        <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-6">
+            <h3 class="font-bold text-gray-900 text-base font-outfit border-b border-gray-100 pb-3">Order Summary</h3>
+
+            <!-- Coupon Code Apply -->
+            <div class="space-y-2">
+                <label class="block text-xs font-bold text-gray-700">Apply Promo / Coupon Code</label>
+
+                {% if coupon_code %}
+                <!-- Coupon Applied State -->
+                <div class="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2.5">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="ticket" class="w-4 h-4 text-emerald-600"></i>
+                        <span class="text-xs font-bold text-emerald-700 uppercase">{{ coupon_code }}</span>
+                        <span class="text-[10px] font-semibold text-emerald-600">
+                            {% if coupon_obj.discount_type == 'percentage' %}
+                                ({{ coupon_obj.discount_value|floatformat:0 }}% OFF)
+                            {% else %}
+                                (₹{{ coupon_obj.discount_value|floatformat:0 }} OFF)
+                            {% endif %}
+                        </span>
+                    </div>
+                    <button 
+                        hx-get="{% url 'remove_coupon' %}" 
+                        hx-target="#cart-container" 
+                        hx-swap="innerHTML"
+                        class="text-red-400 hover:text-red-600 transition p-0.5"
+                        title="Remove coupon"
+                    >
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="text-[11px] font-bold text-emerald-600 flex items-center gap-1 pt-0.5">
+                    <i data-lucide="check" class="w-3.5 h-3.5"></i> Coupon Applied! You saved ₹{{ coupon_discount|floatformat:2 }}
+                </div>
+                {% else %}
+                <!-- Coupon Input State -->
+                <form hx-post="{% url 'apply_coupon' %}" hx-target="#cart-container" hx-swap="innerHTML">
+                    {% csrf_token %}
+                    <div class="flex items-center gap-2">
+                        <input 
+                            type="text" 
+                            name="coupon_code"
+                            placeholder="Enter code (e.g. COMCARE10)" 
+                            class="w-full px-3 py-2 bg-[var(--color-background)] border border-gray-200 rounded-xl text-xs uppercase font-bold focus:outline-none focus:border-[var(--color-primary)]"
+                            value=""
+                        >
+                        <button 
+                            type="submit"
+                            class="bg-gray-900 hover:bg-[var(--color-primary)] text-white px-4 py-2 rounded-xl text-xs font-bold transition shrink-0"
+                        >
+                            Apply
+                        </button>
+                    </div>
+                </form>
+                {% if coupon_error %}
+                <div class="text-[11px] font-bold text-red-500 flex items-center gap-1 pt-0.5">
+                    <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> {{ coupon_error }}
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+
+            <!-- Price Calculations Breakdown -->
+            <div class="space-y-3 text-xs border-t border-gray-100 pt-4">
+                <div class="flex justify-between text-gray-600">
+                    <span>Subtotal ({{ quantity }} Items)</span>
+                    <span class="font-bold text-gray-900">₹{{ total|floatformat:2 }}</span>
+                </div>
+
+                <div class="flex justify-between text-gray-600">
+                    <span>Tax (18% GST)</span>
+                    <span class="font-bold text-gray-900">+₹{{tax |floatformat:2}}</span>
+                </div>
+
+                {% if coupon_discount %}
+                <div class="flex justify-between items-center text-[var(--color-success)] font-bold">
+                    <span class="flex items-center gap-1.5">
+                        <i data-lucide="tag" class="w-3.5 h-3.5 stroke-[2] fill-emerald-50"></i>
+                        {{ coupon_code }}
+                    </span>
+                    <span>-₹{{ coupon_discount|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+
+                <div class="flex justify-between text-gray-600">
+                    <span>Shipping & Packaging</span>
+                    {% if shipping_cost > 0 %}
+                    <span class="font-bold text-gray-900">+₹{{ shipping_cost|floatformat:2 }}</span>
+                    {% else %}
+                    <span class="font-bold text-emerald-600">FREE</span>
+                    {% endif %}
+                </div>
+
+                {% if shipping_cost > 0 and free_shipping_threshold > 0 %}
+                <div class="text-[10px] text-gray-400 -mt-1.5">
+                    Free shipping on orders above ₹{{ free_shipping_threshold|floatformat:0 }}
+                </div>
+                {% endif %}
+                
+                <div class="border-t border-gray-100 pt-3 flex justify-between items-baseline">
+                    <span class="font-bold text-gray-900 text-sm font-outfit">Total Payable</span>
+                    <span class="font-extrabold text-2xl text-[var(--color-primary)] font-outfit">₹{{ grand_total|floatformat:2 }}</span>
+                </div>
+            </div>
+
+            <a href="{% url 'checkout' %}" 
+               class="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white py-3.5 px-4 rounded-xl font-bold text-sm text-center shadow-md shadow-blue-500/20 transition lg:block"
+               :class="showSticky ? 'max-lg:hidden' : 'block'"
+               x-cloak>
+                Proceed to Checkout
+            </a>
+        </div>
+
+        <!-- Mobile Sticky Bottom Bar -->
+        <div id="mobile-cart-sticky-bar" 
+             class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 flex items-center justify-between shadow-[0_-4px_12px_rgba(0,0,0,0.08)] lg:hidden transition-all duration-300 transform"
+             :class="showSticky ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'"
+             x-cloak>
+            <div class="flex flex-col">
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Payable</span>
+                <span class="font-extrabold text-xl text-[var(--color-primary)] font-outfit">₹{{ grand_total|floatformat:2 }}</span>
+            </div>
+            <a href="{% url 'checkout' %}" class="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white py-3 px-6 rounded-xl font-bold text-xs shadow-sm transition">
+                Proceed to Checkout
+            </a>
+        </div>
+
+    </div>
+
+</div>
+{% else %}
+<!-- Empty Cart State -->
+<div class="max-w-md mx-auto bg-white p-8 rounded-3xl border border-gray-200 shadow-sm flex flex-col items-center text-center gap-4 py-12">
+    <div class="w-16 h-16 rounded-full bg-red-50 text-[var(--color-primary)] flex items-center justify-center">
+        <i data-lucide="shopping-cart" class="w-8 h-8"></i>
+    </div>
+    <div>
+        <h3 class="font-bold text-gray-900 text-lg font-outfit">Your Cart is Empty</h3>
+        <p class="text-xs text-gray-500 mt-1">Looks like you haven't added any products to your cart yet.</p>
+    </div>
+    <a href="{% url 'shop' %}" class="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white py-3 px-6 rounded-xl font-bold text-xs shadow-sm transition block text-center mt-2">
+        Continue Shopping
+    </a>
+</div>
+{% endif %}
+
+<!-- Out of Band (OOB) HTMX Live Update for Header Cart Badge -->
+<span id="header-cart-badge" hx-swap-oob="true" class="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-[var(--color-primary)] text-white text-[9px] font-bold flex items-center justify-center border-2 border-white">
+    {{ quantity|default:0 }}
+</span>
+

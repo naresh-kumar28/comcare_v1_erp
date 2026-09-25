@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+
+{% block title %}Repair & Installation Services — ComCare{% endblock %}
+
+{% block content %}
+<!-- Page Banner -->
+<div class="bg-gradient-to-r from-gray-900 via-red-950 to-gray-900 text-white py-14 border-b border-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-3">
+        <span class="bg-amber-500/20 text-amber-300 text-xs font-bold px-3.5 py-1 rounded-full uppercase tracking-wider">Lead Generation & Scheduling</span>
+        <h1 class="text-3xl sm:text-4xl font-extrabold font-outfit text-white">Hardware Repair & Installation Services</h1>
+        <p class="text-gray-300 text-sm max-w-2xl mx-auto">
+            Submit your repair request online or call us directly. Our certified technicians in Purnea will review your inquiry and contact you promptly.
+        </p>
+    </div>
+</div>
+
+<div class="py-16 bg-[var(--color-background)]" 
+     x-data="{ 
+         serviceSubmitted: {% if form_submitted %}true{% else %}false{% endif %}, 
+         isSubmitting: false, 
+         submittedName: '{{ submitted_name|default:"" }}',
+         submitServiceForm(event) {
+             this.isSubmitting = true;
+             const formData = new FormData(event.target);
+             fetch('{% url "services" %}', {
+                 method: 'POST',
+                 headers: {
+                     'X-CSRFToken': '{{ csrf_token }}',
+                     'X-Requested-With': 'XMLHttpRequest'
+                 },
+                 body: formData
+             })
+             .then(res => res.json())
+             .then(data => {
+                 this.isSubmitting = false;
+                 if (data.status === 'success') {
+                     this.submittedName = formData.get('full_name') || '';
+                     this.serviceSubmitted = true;
+                 }
+             })
+             .catch(err => {
+                 this.isSubmitting = false;
+                 this.submittedName = formData.get('full_name') || '';
+                 this.serviceSubmitted = true;
+             });
+         },
+         sendToWhatsApp(event) {
+             const form = event.target.closest('form');
+             if (!form.checkValidity()) {
+                 form.reportValidity();
+                 return;
+             }
+
+             this.isSubmitting = true;
+             const formData = new FormData(form);
+
+             fetch('{% url "services" %}', {
+                 method: 'POST',
+                 headers: {
+                     'X-CSRFToken': '{{ csrf_token }}',
+                     'X-Requested-With': 'XMLHttpRequest'
+                 },
+                 body: formData
+             })
+             .then(res => res.json())
+             .then(data => {
+                 this.isSubmitting = false;
+                 this.submittedName = formData.get('full_name') || '';
+                 this.serviceSubmitted = true;
+
+                 let msg = `*🛠️ New Service Request Inquiry - ComCare*\n\n`;
+                 msg += `*Name:* ${formData.get('full_name')}\n`;
+                 msg += `*Phone:* ${formData.get('phone')}\n`;
+                 msg += `*Service Category:* ${formData.get('service_category')}\n`;
+                 msg += `*Preferred Time:* ${formData.get('preferred_time')}\n`;
+                 msg += `*Issue Details:* ${formData.get('issue_description')}\n`;
+
+                 if (data.photo_url) {
+                     const absolutePhotoUrl = window.location.origin + data.photo_url;
+                     msg += `*Attached Device Photo:* ${absolutePhotoUrl}\n`;
+                 }
+
+                 const encodedMsg = encodeURIComponent(msg);
+                 window.open(`https://wa.me/917782933700?text=${encodedMsg}`, '_blank');
+             })
+             .catch(err => {
+                 this.isSubmitting = false;
+                 this.submittedName = formData.get('full_name') || '';
+                 this.serviceSubmitted = true;
+
+                 let msg = `*🛠️ New Service Request Inquiry - ComCare*\n\n`;
+                 msg += `*Name:* ${formData.get('full_name')}\n`;
+                 msg += `*Phone:* ${formData.get('phone')}\n`;
+                 msg += `*Service Category:* ${formData.get('service_category')}\n`;
+                 msg += `*Preferred Time:* ${formData.get('preferred_time')}\n`;
+                 msg += `*Issue Details:* ${formData.get('issue_description')}\n`;
+                 const encodedMsg = encodeURIComponent(msg);
+                 window.open(`https://wa.me/917782933700?text=${encodedMsg}`, '_blank');
+             });
+         }
+     }">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+        
+        <!-- Services Grid Cards (Dynamic) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {% for service in services %}
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition space-y-4">
+                <div class="w-14 h-14 rounded-2xl {{ service.icon_bg_color|default:'bg-red-50 text-[var(--color-primary)]' }} flex items-center justify-center">
+                    <i data-lucide="{{ service.icon|default:'wrench' }}" class="w-7 h-7"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white font-outfit">{{ service.title }}</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                    {{ service.short_description }}
+                </p>
+                {% if service.bullet_points %}
+                <ul class="space-y-2 text-xs text-gray-700 dark:text-gray-300 pt-2 border-t border-gray-100 dark:border-gray-700/60">
+                    {% for pt in service.bullet_points %}
+                    <li class="flex items-center gap-2">
+                        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500 shrink-0"></i> {{ pt }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% empty %}
+            <!-- Fallback Default Services if none in DB yet -->
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
+                <div class="w-14 h-14 rounded-2xl bg-red-50 text-[var(--color-primary)] flex items-center justify-center">
+                    <i data-lucide="laptop" class="w-7 h-7"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white font-outfit">Laptop Repair</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Display replacement, motherboard chip-level repair, battery swap, RAM/SSD speed upgrade for Dell, HP, Lenovo, ASUS.</p>
+                <ul class="space-y-2 text-xs text-gray-700 dark:text-gray-300 pt-2 border-t border-gray-100 dark:border-gray-700">
+                    <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i> Screen & Keyboard Replacement</li>
+                    <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i> Overheating & Fan Servicing</li>
+                    <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i> OS Formatting & Data Recovery</li>
+                </ul>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
+                <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <i data-lucide="printer" class="w-7 h-7"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white font-outfit">Printer Repair & Refill</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">LaserJet & InkTank printer maintenance, paper jam fix, roller replacement, toner cartridge refilling, and Wi-Fi printer configuration.</p>
+                <ul class="space-y-2 text-xs text-gray-700 dark:text-gray-300 pt-2 border-t border-gray-100 dark:border-gray-700">
+                    <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i> HP, Canon, Epson & Brother Support</li>
+                    <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i> High-Yield Powder & Ink Refills</li>
+                    <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i> Logic Board & Power Supply Fix</li>
+                </ul>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
+                <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <i data-lucide="video" class="w-7 h-7"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white font-outfit">CCTV Security Installation</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Turn-key CCTV camera wiring and installation for homes, offices, schools, and shops in Purnea. HD Dome/Bullet cameras and Mobile Live View.</p>
+                <ul class="space-y-2 text-xs text-gray-700 dark:text-gray-300 pt-2 border-t border-gray-100 dark:border-gray-700">
+                    <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i> CP Plus, Hikvision, Dahua Authorized</li>
+                    <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i> DVR/NVR Hard Disk Recording Setup</li>
+                    <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i> Remote Mobile Phone Monitoring</li>
+                </ul>
+            </div>
+            {% endfor %}
+
+        </div>
+
+        <!-- Service Request Form (Lead Generation) -->
+        <div class="bg-white dark:bg-gray-800/90 p-8 sm:p-12 rounded-3xl border border-gray-200 dark:border-gray-700/80 shadow-lg max-w-4xl mx-auto">
+            <div class="text-center max-w-xl mx-auto mb-8">
+                <span class="text-[var(--color-primary)] text-xs font-bold uppercase tracking-wider">Service Request Form</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white font-outfit mt-1">Book a Technician Call Back</h2>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Fill out the details below. We will call you within 1 to 2 business hours.</p>
+            </div>
+
+            <!-- Success State -->
+            <div x-show="serviceSubmitted" x-cloak class="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300 p-6 rounded-2xl text-center space-y-3">
+                <div class="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+                    <i data-lucide="check-circle" class="w-6 h-6"></i>
+                </div>
+                <h3 class="font-bold text-lg font-outfit">Service Request Received!</h3>
+                <p class="text-xs text-emerald-700 dark:text-emerald-400 max-w-md mx-auto">
+                    Thank you<span x-text="submittedName ? ', ' + submittedName : ''"></span>! Our technical lead in Purnea has received your request and will call you shortly at your registered phone number.
+                </p>
+                <button @click="serviceSubmitted = false" class="text-xs font-bold text-emerald-700 dark:text-emerald-400 underline pt-2">
+                    Submit Another Request
+                </button>
+            </div>
+
+            <!-- Form -->
+            <form x-show="!serviceSubmitted" @submit.prevent="submitServiceForm($event)" class="space-y-6">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">Your Full Name *</label>
+                        <input type="text" name="full_name" required placeholder="e.g. Navratan Kumar" class="w-full px-4 py-3 bg-[var(--color-background)] dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl text-sm focus:outline-none focus:border-[var(--color-primary)] transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">Mobile / WhatsApp Number *</label>
+                        <input type="tel" name="phone" required placeholder="e.g. 7782933700" class="w-full px-4 py-3 bg-[var(--color-background)] dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl text-sm focus:outline-none focus:border-[var(--color-primary)] transition">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">Select Service Category *</label>
+                        <select name="service_category" required class="w-full px-4 py-3 bg-[var(--color-background)] dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl text-sm focus:outline-none focus:border-[var(--color-primary)] transition">
+                            <option value="Laptop Repair">Laptop Repair (Display, Battery, Speed)</option>
+                            <option value="Printer Repair">Printer Repair & Ink Refilling</option>
+                            <option value="CCTV Installation">CCTV Camera Installation & Servicing</option>
+                            <option value="Desktop Hardware">Desktop / PC Hardware Repair</option>
+                            <option value="Other Custom Inquiry">Other Hardware / Custom Inquiry</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">Preferred Call Back Time</label>
+                        <select name="preferred_time" class="w-full px-4 py-3 bg-[var(--color-background)] dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl text-sm focus:outline-none focus:border-[var(--color-primary)] transition">
+                            <option value="Morning (9:00 AM – 12:00 PM)">Morning (9:00 AM – 12:00 PM)</option>
+                            <option value="Afternoon (12:00 PM – 3:00 PM)">Afternoon (12:00 PM – 3:00 PM)</option>
+                            <option value="Evening (3:00 PM – 6:00 PM)">Evening (3:00 PM – 6:00 PM)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">Describe the Issue / Equipment Details *</label>
+                    <textarea name="issue_description" rows="4" required placeholder="e.g. Dell laptop screen flickers and battery doesn't hold charge..." class="w-full px-4 py-3 bg-[var(--color-background)] dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl text-sm focus:outline-none focus:border-[var(--color-primary)] transition"></textarea>
+                </div>
+
+                <!-- Device Image Upload -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">Upload Device / Issue Photo (Optional)</label>
+                    <div class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl p-6 text-center bg-[var(--color-background)] dark:bg-gray-900 hover:bg-gray-100/80 dark:hover:bg-gray-800 transition cursor-pointer relative">
+                        <i data-lucide="upload-cloud" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+                        <p class="text-xs text-gray-600 dark:text-gray-300 font-semibold">Click to upload damaged screen or device photo</p>
+                        <p class="text-[10px] text-gray-400 mt-1">PNG, JPG up to 5MB</p>
+                        <input type="file" name="device_photo" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 items-center">
+                    <button type="submit" :disabled="isSubmitting" class="w-full sm:flex-1 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white py-4 px-6 rounded-xl font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
+                        <span x-show="!isSubmitting" class="flex items-center gap-2">
+                            <i data-lucide="send" class="w-4 h-4"></i> Submit Service Request
+                        </span>
+                        <span x-show="isSubmitting" class="flex items-center gap-2">
+                            <svg class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
+                            Submitting...
+                        </span>
+                    </button>
+                    
+                    <button type="button" @click="sendToWhatsApp($event)" :disabled="isSubmitting" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white py-4 px-6 rounded-xl font-bold text-sm shadow-md transition flex items-center justify-center gap-2 shrink-0">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.707 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        Instant WhatsApp Chat
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}All Categories — ComCare{% endblock %}
+
+{% block content %}
+<!-- Banner -->
+<div class="bg-gradient-to-r from-gray-900 via-red-950 to-gray-900 text-white py-12 border-b border-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-2">
+        <span class="text-xs text-red-400 font-bold uppercase tracking-wider">Taxonomy & Navigation</span>
+        <h1 class="text-3xl font-extrabold font-outfit text-white">Product Categories</h1>
+        <p class="text-xs text-gray-300">Browse our hardware divisions, accessories, and tech services</p>
+    </div>
+</div>
+
+<div class="py-16 bg-[var(--color-background)]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        
+        {% if categories %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for cat in categories %}
+            <div class="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md transition space-y-6 flex flex-col justify-between">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="w-14 h-14 rounded-2xl bg-red-50 text-[var(--color-primary)] flex items-center justify-center overflow-hidden shrink-0">
+                            {% if cat.image %}
+                            <img src="{{ cat.image.url }}" alt="{{ cat.name }}" class="w-full h-full object-cover">
+                            {% else %}
+                            <i data-lucide="layers" class="w-7 h-7"></i>
+                            {% endif %}
+                        </div>
+                        <span class="bg-red-50 text-[var(--color-primary)] text-xs font-bold px-3 py-1 rounded-full">
+                            {{ cat.product_count }} Product{{ cat.product_count|pluralize }}
+                        </span>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900 font-outfit">{{ cat.name }}</h2>
+                        {% if cat.description %}
+                        <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ cat.description }}</p>
+                        {% else %}
+                        <p class="text-xs text-gray-400 mt-1">Explore our genuine {{ cat.name }} collection and deals.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <a href="{% url 'shop' %}?cat={{ cat.slug }}" class="block w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white py-3 rounded-xl font-bold text-xs text-center transition">
+                    Explore {{ cat.name }}
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white p-12 rounded-3xl border border-gray-200 shadow-sm text-center">
+            <p class="text-gray-500 font-bold">No active categories found.</p>
+        </div>
+        {% endif %}
+        
+    </div>
+</div>
+{% endblock %}

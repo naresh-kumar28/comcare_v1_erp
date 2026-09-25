@@ -1,0 +1,15 @@
+{% for product in products %}
+    {% include 'partials/admin_inventory_row.html' %}
+{% empty %}
+    <tr>
+        <td colspan="5" class="p-8 text-center text-gray-500">
+            <div class="max-w-xs mx-auto space-y-2">
+                <div class="w-10 h-10 rounded-2xl bg-red-50 text-[var(--color-primary)] flex items-center justify-center mx-auto">
+                    <i data-lucide="package-search" class="w-5 h-5"></i>
+                </div>
+                <div class="font-bold text-gray-900 text-sm">No Inventory Matches</div>
+                <p class="text-xs text-gray-400">There are no products matching your selected stock filter or search query.</p>
+            </div>
+        </td>
+    </tr>
+{% endfor %}

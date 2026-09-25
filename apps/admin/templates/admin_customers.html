@@ -1,0 +1,85 @@
+{% extends 'admin_base.html' %}
+{% load indian_numbers humanize %}
+
+{% block title %}Customers CRM — ComCare Admin Panel{% endblock %}
+{% block header_title %}Customer Management (CRM){% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    
+    <!-- Header Overview & Search Bar -->
+    <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+        <div>
+            <h2 class="text-base font-bold text-gray-900 font-outfit">Registered Customer Accounts ({{ total_customers_count|intcomma }} Users)</h2>
+            <p class="text-xs text-gray-500">View customer profile data, lifetime value & order histories</p>
+        </div>
+        
+        <!-- Live Search Input (HTMX) -->
+        <div class="relative min-w-[260px]">
+            <input type="text"
+                   name="q"
+                   value="{{ q }}"
+                   placeholder="Search name, email, or phone..."
+                   hx-get="{% url 'admin_customers' %}"
+                   hx-trigger="keyup changed delay:350ms, search"
+                   hx-target="#customers-table-body"
+                   class="w-full pl-9 pr-4 py-2 bg-[var(--color-background)] border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-[var(--color-primary)] focus:bg-white transition">
+            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-2.5"></i>
+        </div>
+    </div>
+
+    <!-- Customers CRM Table -->
+    <div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden p-6 space-y-4">
+        <h3 class="font-bold text-gray-900 text-base font-outfit">Registered Users & Lifetime Value</h3>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider border-b">
+                    <tr>
+                        <th class="p-4">Customer Name & ID</th>
+                        <th class="p-4">Contact Details</th>
+                        <th class="p-4">Total Orders</th>
+                        <th class="p-4">Lifetime Value</th>
+                        <th class="p-4 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="customers-table-body" class="divide-y divide-gray-100 text-gray-700">
+                    {% include 'partials/admin_customer_table_body.html' %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        {% if customers.has_other_pages %}
+        <div class="p-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+            <div>
+                Showing Page <span class="font-bold text-gray-900">{{ customers.number }}</span> of <span class="font-bold text-gray-900">{{ customers.paginator.num_pages }}</span>
+            </div>
+            <div class="flex items-center gap-2 font-bold">
+                {% if customers.has_previous %}
+                    <button hx-get="?page={{ customers.previous_page_number }}{% if q %}&q={{ q }}{% endif %}"
+                            hx-target="#customers-table-body"
+                            hx-push-url="true"
+                            class="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition">
+                        &laquo; Previous
+                    </button>
+                {% endif %}
+                
+                {% if customers.has_next %}
+                    <button hx-get="?page={{ customers.next_page_number }}{% if q %}&q={{ q }}{% endif %}"
+                            hx-target="#customers-table-body"
+                            hx-push-url="true"
+                            class="px-3 py-1.5 rounded-xl bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition">
+                        Next &raquo;
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- HTMX Customer Profile Modal Target Container -->
+    <div id="customer-modal-container"></div>
+
+</div>
+{% endblock %}

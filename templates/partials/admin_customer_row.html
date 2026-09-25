@@ -1,0 +1,36 @@
+{% load indian_numbers %}
+<tr class="hover:bg-red-50/30 transition">
+    <td class="p-4">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-red-100 text-[var(--color-primary)] font-bold flex items-center justify-center font-outfit uppercase shrink-0">
+                {% if customer.profile_picture %}
+                    <img src="{{ customer.profile_picture.url }}" alt="{{ customer.display_name }}" class="w-full h-full object-cover rounded-xl">
+                {% else %}
+                    {{ customer.display_name|slice:":2" }}
+                {% endif %}
+            </div>
+            <div>
+                <div class="font-bold text-gray-900 text-xs">{{ customer.display_name }}</div>
+                <div class="text-[10px] text-gray-400 font-mono">#BIT-CUST-{{ customer.id }} • Joined {{ customer.date_joined|date:"M Y" }}</div>
+            </div>
+        </div>
+    </td>
+    <td class="p-4">
+        <div class="font-semibold text-gray-900 text-xs">{{ customer.phone_number|default:"No phone" }}</div>
+        <div class="text-[10px] text-gray-500 font-mono">{{ customer.email }}</div>
+    </td>
+    <td class="p-4 font-bold text-gray-900 text-xs">
+        {{ customer.order_count }} Order{% if customer.order_count != 1 %}s{% endif %}
+    </td>
+    <td class="p-4 font-extrabold text-[var(--color-primary)] font-outfit text-sm whitespace-nowrap">
+        ₹{{ customer.lifetime_value|default:0|indian_format }}
+    </td>
+    <td class="p-4 text-right whitespace-nowrap">
+        <button hx-get="{% url 'admin_customer_detail' customer.id %}"
+                hx-target="#customer-modal-container"
+                hx-swap="innerHTML"
+                class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-[var(--color-primary)] rounded-xl font-bold text-xs transition">
+            View Profile
+        </button>
+    </td>
+</tr>

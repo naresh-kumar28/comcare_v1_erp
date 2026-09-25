@@ -1,0 +1,67 @@
+{% load indian_numbers %}
+<tr id="coupon-row-{{ coupon.id }}" class="hover:bg-red-50/30 transition {% if not coupon.is_active %}opacity-60 bg-gray-50/50{% endif %}">
+    <td class="p-4">
+        <div class="font-extrabold text-[var(--color-primary)] font-outfit text-sm font-mono tracking-wider">{{ coupon.code }}</div>
+        <div class="text-[10px] text-gray-400">{{ coupon.description|default:"No description" }}</div>
+    </td>
+    <td class="p-4 font-bold">
+        {% if coupon.discount_type == 'percentage' %}
+            <span class="text-purple-600 bg-purple-50 px-2.5 py-1 rounded-xl border border-purple-200">
+                {{ coupon.discount_value|floatformat:0 }}% OFF
+            </span>
+            {% if coupon.max_discount_amount %}
+                <span class="text-[10px] text-gray-400 block mt-1">(Max ₹{{ coupon.max_discount_amount|indian_format }})</span>
+            {% endif %}
+        {% else %}
+            <span class="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200">
+                Flat ₹{{ coupon.discount_value|indian_format }} OFF
+            </span>
+        {% endif %}
+    </td>
+    <td class="p-4 font-semibold text-gray-900">
+        {% if coupon.min_order_amount > 0 %}
+            ₹{{ coupon.min_order_amount|indian_format }}
+        {% else %}
+            <span class="text-gray-400">No Minimum</span>
+        {% endif %}
+    </td>
+    <td class="p-4 font-semibold text-gray-900">
+        {{ coupon.used_count }} / {% if coupon.usage_limit %}{{ coupon.usage_limit }}{% else %}∞{% endif %} Used
+    </td>
+    <td class="p-4 text-gray-500 font-semibold text-xs whitespace-nowrap">
+        {% if coupon.valid_to %}
+            {{ coupon.valid_to|date:"d M Y" }}
+        {% else %}
+            <span class="text-emerald-600 font-bold">Never Expires</span>
+        {% endif %}
+    </td>
+    <td class="p-4 text-right space-x-1.5 whitespace-nowrap">
+        <!-- Toggle Active Status Button -->
+        <button hx-post="{% url 'admin_coupon_toggle_active' coupon.id %}"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                hx-target="#coupon-row-{{ coupon.id }}"
+                hx-swap="outerHTML"
+                class="px-2.5 py-1.5 rounded-xl font-bold text-xs transition
+                       {% if coupon.is_active %}bg-emerald-50 text-emerald-700 hover:bg-emerald-100{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+            {% if coupon.is_active %}Active{% else %}Inactive{% endif %}
+        </button>
+
+        <!-- Edit Button -->
+        <button hx-get="{% url 'admin_coupon_edit_form' coupon.id %}"
+                hx-target="#coupon-modal-container"
+                hx-swap="innerHTML"
+                class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-xs transition">
+            Edit
+        </button>
+
+        <!-- Delete Button -->
+        <button hx-post="{% url 'admin_coupon_delete' coupon.id %}"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                hx-confirm="Are you sure you want to delete coupon code '{{ coupon.code }}'?"
+                hx-target="#coupon-row-{{ coupon.id }}"
+                hx-swap="outerHTML swap:0.3s"
+                class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold text-xs transition">
+            Delete
+        </button>
+    </td>
+</tr>

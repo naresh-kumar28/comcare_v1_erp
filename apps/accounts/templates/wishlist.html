@@ -1,0 +1,180 @@
+{% extends base_template|default:'account_base.html' %}
+
+{% block title %}My Wishlist — ComCare{% endblock %}
+
+{% block account_content %}
+<!-- Page Title Header -->
+<div class="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div>
+        <span class="text-xs text-[var(--color-primary)] font-bold uppercase tracking-wider">Account Dashboard</span>
+        <h1 class="text-2xl font-extrabold text-gray-900 font-outfit mt-1 flex items-center gap-2">
+            My Wishlist 
+            <span id="wishlist-count-badge" class="bg-red-50 text-[var(--color-primary)] border border-red-100 text-xs px-2.5 py-0.5 rounded-full font-bold font-outfit">{{ wishlist_count }}</span>
+        </h1>
+    </div>
+    <a href="{% url 'shop' %}" class="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-sm transition">
+        Continue Shopping
+    </a>
+</div>
+
+{% if not request.user.is_authenticated %}
+<!-- Guest Wishlist Notice Banner -->
+<div class="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-4 flex items-center justify-between gap-4 text-xs text-amber-900 shadow-sm">
+    <div class="flex items-center gap-2.5">
+        <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0"></i>
+        <span>You are currently viewing a <strong>guest wishlist</strong>. <a href="{% url 'login' %}" class="underline font-bold hover:text-amber-950">Sign in</a> to save your favorites permanently across devices.</span>
+    </div>
+    <a href="{% url 'login' %}" class="shrink-0 bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-lg font-bold text-[11px] transition">
+        Sign In
+    </a>
+</div>
+{% endif %}
+
+<!-- Wishlist Products Grid -->
+<div id="wishlist-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for item in wishlist_items %}
+    {% with product=item.product %}
+    <div id="wishlist-card-{{ product.id }}" class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between group relative">
+        
+        <!-- Badges & Remove Button -->
+        <div class="absolute top-6 left-6 right-6 flex items-center justify-between z-10">
+            {% if product.discount_percent %}
+            <span class="bg-[var(--color-success)] text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
+                Save {{ product.discount_percent }}%
+            </span>
+            {% else %}
+            <div></div>
+            {% endif %}
+
+            <button
+                type="button"
+                onclick="removeFromWishlist({{ product.id }}, '{{ csrf_token }}')"
+                class="w-8 h-8 rounded-full bg-rose-50 text-rose-500 border border-rose-200 shadow flex items-center justify-center hover:bg-rose-100 transition"
+                title="Remove from wishlist"
+            >
+                <i data-lucide="heart" class="w-4 h-4 fill-rose-500 text-rose-500"></i>
+            </button>
+        </div>
+
+        <!-- Thumbnail -->
+        <a href="{% url 'product_detail' product.slug %}" class="block relative w-full pt-[80%] bg-[var(--color-background)] rounded-xl overflow-hidden mb-4 group-hover:bg-red-50/50 transition">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300">
+            {% else %}
+            <div class="absolute inset-0 flex items-center justify-center p-6">
+                <i data-lucide="laptop" class="w-20 h-20 text-gray-400 group-hover:scale-110 group-hover:text-[var(--color-primary)] transition-all duration-300"></i>
+            </div>
+            {% endif %}
+        </a>
+
+        <!-- Details -->
+        <div class="space-y-2 flex-1 flex flex-col justify-between">
+            <div>
+                <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                    {{ product.category.name|default:"IT Product" }}
+                </div>
+                <a href="{% url 'product_detail' product.slug %}" class="font-bold text-gray-900 text-sm hover:text-[var(--color-primary)] transition line-clamp-2 mt-0.5">
+                    {{ product.title }}
+                </a>
+                <div class="text-[11px] text-gray-500 mt-1 flex items-center gap-2">
+                    <span>SKU: {{ product.sku }}</span>
+                    <span>•</span>
+                    <span>Brand: {{ product.brand }}</span>
+                </div>
+            </div>
+
+            <div class="pt-2 border-t border-gray-100">
+                <div class="flex items-center gap-1 text-xs text-amber-500 mb-2">
+                    <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                    <span class="font-bold text-gray-800">{{ product.rating|default:"4.8" }}</span>
+                    <span class="text-gray-400 text-[11px]">({{ product.reviews_count|default:"24" }})</span>
+                </div>
+
+                <div class="flex items-baseline gap-2 mb-3">
+                    <span class="text-lg font-bold text-gray-900 font-outfit">₹{{ product.selling_price }}</span>
+                    {% if product.original_price %}
+                    <span class="text-xs text-gray-400 line-through">₹{{ product.original_price }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <a href="{% url 'add_cart' product.id %}" class="py-2.5 px-3 rounded-xl border border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-red-50 font-semibold text-xs text-center transition flex items-center justify-center gap-1.5">
+                        <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> Add
+                    </a>
+                    <a href="{% url 'buy_now' product.id %}" class="py-2.5 px-3 rounded-xl bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] font-semibold text-xs text-center transition shadow-sm flex items-center justify-center gap-1">
+                        Buy Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endwith %}
+    {% empty %}
+    <!-- Empty State -->
+    <div class="col-span-full bg-white p-12 rounded-3xl border border-gray-200 shadow-sm text-center space-y-4">
+        <div class="w-16 h-16 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mx-auto shadow-inner">
+            <i data-lucide="heart" class="w-8 h-8"></i>
+        </div>
+        <div class="space-y-1">
+            <h3 class="font-extrabold text-gray-900 text-lg font-outfit">Your Wishlist is Empty</h3>
+            <p class="text-xs text-gray-400 max-w-sm mx-auto">Explore our wide range of IT products and save your favorites to your wishlist.</p>
+        </div>
+        <a href="{% url 'shop' %}" class="inline-block bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-6 py-3 rounded-xl font-bold text-xs transition shadow-md shadow-blue-500/20">
+            Explore Store
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+function removeFromWishlist(productId, csrfToken) {
+    fetch('/account/wishlist/toggle/' + productId + '/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success' && !data.in_wishlist) {
+            // Animate and remove the card
+            const card = document.getElementById('wishlist-card-' + productId);
+            if (card) {
+                card.style.transition = 'all 0.3s ease-out';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    card.remove();
+                    // Update count badge
+                    const badge = document.getElementById('wishlist-count-badge');
+                    if (badge) badge.textContent = data.wishlist_count;
+                    // Update header badge
+                    document.querySelectorAll('#header-wishlist-badge').forEach(el => el.textContent = data.wishlist_count);
+
+                    // If no cards remain, show empty state
+                    const grid = document.getElementById('wishlist-grid');
+                    const remaining = grid.querySelectorAll('[id^="wishlist-card-"]');
+                    if (remaining.length === 0) {
+                        grid.innerHTML = `
+                            <div class="col-span-full bg-white p-12 rounded-3xl border border-gray-200 shadow-sm text-center space-y-4">
+                                <div class="w-16 h-16 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mx-auto shadow-inner">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                                </div>
+                                <div class="space-y-1">
+                                    <h3 class="font-extrabold text-gray-900 text-lg font-outfit">Your Wishlist is Empty</h3>
+                                    <p class="text-xs text-gray-400 max-w-sm mx-auto">Explore our wide range of IT products and save your favorites to your wishlist.</p>
+                                </div>
+                                <a href="/shop/" class="inline-block bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-6 py-3 rounded-xl font-bold text-xs transition shadow-md shadow-blue-500/20">
+                                    Explore Store
+                                </a>
+                            </div>`;
+                    }
+                }, 300);
+            }
+        }
+    })
+    .catch(err => console.error(err));
+}
+</script>
+{% endblock %}

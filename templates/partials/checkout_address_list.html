@@ -1,0 +1,62 @@
+{% if addresses %}
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    {% for addr in addresses %}
+    <label 
+        @click="selectedAddress = '{{ addr.id }}'"
+        class="p-4 rounded-2xl border-2 cursor-pointer transition relative block bg-white dark:bg-gray-800/50"
+        :class="selectedAddress == '{{ addr.id }}' ? 'border-[var(--color-primary)] bg-red-50/10 dark:bg-red-950/40 shadow-sm' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
+    >
+        <input type="radio" name="address" value="{{ addr.id }}" x-model="selectedAddress" class="sr-only">
+        <div class="flex items-start gap-3">
+            <div class="mt-1 shrink-0 flex items-center justify-center w-5 h-5 rounded-full border-2 transition"
+                 :class="selectedAddress == '{{ addr.id }}' ? 'border-[var(--color-primary)]' : 'border-gray-300 dark:border-gray-600'">
+                 <div class="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)]" x-show="selectedAddress == '{{ addr.id }}'"></div>
+            </div>
+            <div class="space-y-1 flex-1">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="font-extrabold text-sm text-gray-900 dark:text-white font-outfit">{{ addr.full_name }}</span>
+                        {% if addr.is_default %}
+                        <span class="bg-red-50 dark:bg-red-900/40 text-[var(--color-primary)] dark:text-red-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-red-100 dark:border-blue-800/50">Default</span>
+                        {% endif %}
+                        <span class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize">{{ addr.address_type }}</span>
+                    </div>
+                    <div class="flex items-center gap-2" @click.stop>
+                        <button type="button" 
+                            @click.stop="openEditAddressModal({{ addr.id }}, '{{ addr.full_name|escapejs }}', '{{ addr.phone|escapejs }}', '{{ addr.email|escapejs }}', '{{ addr.address_line1|escapejs }}', '{{ addr.address_line2|escapejs }}', '{{ addr.city|escapejs }}', '{{ addr.state|escapejs }}', '{{ addr.pincode|escapejs }}', '{{ addr.address_type|escapejs }}', {{ addr.is_default|yesno:'true,false' }})" 
+                            class="text-xs font-bold text-[var(--color-primary)] hover:underline">
+                            Edit
+                        </button>
+                        <button type="button"
+                            hx-post="{% url 'delete_address' addr.id %}?view_type=checkout"
+                            hx-target="#checkout-address-list"
+                            hx-swap="innerHTML"
+                            hx-confirm="Are you sure you want to delete this address?"
+                            class="text-xs font-bold text-red-500 hover:underline">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">{{ addr.address_line1 }}{% if addr.address_line2 %}, {{ addr.address_line2 }}{% endif %}, {{ addr.city }}, {{ addr.state }} - {{ addr.pincode }}</p>
+                <p class="text-xs font-semibold text-gray-800 dark:text-gray-200 pt-1">+91 {{ addr.phone }}{% if addr.email %} &bull; {{ addr.email }}{% endif %}</p>
+            </div>
+        </div>
+    </label>
+    {% endfor %}
+</div>
+{% else %}
+<!-- No addresses found prompt -->
+<div class="text-center py-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl space-y-3">
+    <i data-lucide="map-pin-off" class="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto"></i>
+    <p class="text-xs font-semibold text-gray-500 dark:text-gray-400">No saved addresses found. Please add an address to continue.</p>
+    <button type="button" @click="openAddAddressModal()" class="inline-flex items-center gap-1.5 bg-[var(--color-primary)] text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-sm">
+        <i data-lucide="plus" class="w-4 h-4"></i> Add Shipping Address
+    </button>
+</div>
+{% endif %}
+
+{% if addresses %}
+<button type="button" @click="openAddAddressModal()" class="w-full mt-4 py-3.5 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-300 font-bold text-xs flex items-center justify-center gap-2 transition bg-gray-50/50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-700/60">
+    <i data-lucide="plus" class="w-4 h-4 text-[var(--color-primary)]"></i> Add Another Address
+</button>
+{% endif %}

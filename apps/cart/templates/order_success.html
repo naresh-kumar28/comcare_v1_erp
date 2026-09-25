@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Confirmed — ComCare{% endblock %}
+
+{% block header %}
+    {% include 'base_cart_header.html' with active_step=3 page_title="Order Confirmed" back_url="/" %}
+{% endblock %}
+
+{% block content %}
+<div class="py-0 bg-[var(--color-background)] min-h-screen">
+
+    <div class="max-w-md mx-auto px-4 py-12 space-y-8 flex flex-col items-center">
+
+        <div
+            class="relative mx-auto flex items-center justify-center w-24 h-24 bg-gradient-to-tr from-green-400 to-green-500 rounded-full shadow-green-200">
+            <div class="absolute inset-1 border-2 border-white/30 rounded-full"></div>
+            <svg class="w-14 h-14 text-white relative z-10" fill="none" stroke="currentColor" stroke-width="2.5"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+            </svg>
+        </div>
+
+        <!-- Success Headings -->
+        <div class="text-center space-y-3">
+            <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 font-outfit">Order Placed Successfully!</h1>
+            <p class="text-xs text-gray-500 max-w-sm leading-relaxed">
+                Your order <strong class="text-gray-800 font-bold">#{{ order.order_number|default:"BIT-ORD-89201" }}</strong> has been confirmed. We've sent the details to your email.
+            </p>
+        </div>
+
+        <!-- Details Card -->
+        <div class="w-full bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-4">
+            <div class="divide-y divide-gray-100 text-xs">
+                <div class="flex justify-between items-center py-2.5">
+                    <span class="text-gray-500 font-semibold">Order Number</span>
+                    <span class="text-gray-900 font-extrabold font-outfit">#{{ order.order_number|default:"BIT-ORD-89201" }}</span>
+                </div>
+                <div class="flex justify-between items-center py-3">
+                    <span class="text-gray-500 font-semibold">Order Date</span>
+                    <span class="text-gray-900 font-extrabold font-outfit">{{ order.created_at|date:"M d, Y"|default:"Today" }}</span>
+                </div>
+                <div class="flex justify-between items-center py-3">
+                    <span class="text-gray-500 font-semibold">Deliver To</span>
+                    <span class="text-gray-900 font-extrabold font-outfit text-right truncate max-w-[180px]">{{ order.full_name|default:"Customer" }} ({{ order.pincode|default:"854301" }})</span>
+                </div>
+                <div class="flex justify-between items-center py-3">
+                    <span class="text-gray-500 font-semibold">Payment Method</span>
+                    <span class="text-gray-900 font-extrabold font-outfit capitalize">
+                        {% if order.payment_method == 'razorpay' %}Razorpay Online{% else %}Cash on Delivery{% endif %}
+                    </span>
+                </div>
+                <div class="flex justify-between items-center py-2.5 pb-0">
+                    <span class="text-gray-500 font-semibold">Grand Total</span>
+                    <span class="text-[var(--color-primary)] font-extrabold text-sm font-outfit">₹{{ order.grand_total|floatformat:2|default:"2,450.00" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action CTAs Stacked -->
+        <div class="w-full space-y-4">
+            <!-- Download Invoice -->
+            {% if order and order.invoice_access_token %}
+            <a href="{% url 'secure_order_invoice' order.order_number order.invoice_access_token %}" target="_blank" class="w-full border border-emerald-500 hover:bg-emerald-50 text-emerald-600 font-extrabold py-3.5 px-6 rounded-xl text-xs flex items-center justify-center gap-2 transition">
+                <i data-lucide="download" class="w-4 h-4"></i> Download Invoice / Print
+            </a>
+            {% else %}
+            <button onclick="window.print()" class="w-full border border-emerald-500 hover:bg-emerald-50 text-emerald-600 font-extrabold py-3.5 px-6 rounded-xl text-xs flex items-center justify-center gap-2 transition">
+                <i data-lucide="download" class="w-4 h-4"></i> Download Invoice / Print
+            </button>
+            {% endif %}
+            
+            <!-- Continue Shopping -->
+            <a href="{% url 'shop' %}" class="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white py-3.5 px-6 rounded-xl font-extrabold text-xs text-center block shadow-md shadow-blue-500/20 transition">
+                Continue Shopping
+            </a>
+
+            <!-- Track Your Order Link -->
+            <a href="{% url 'account_orders' %}" class="block text-center text-xs font-bold text-[var(--color-primary)] hover:underline pt-2">
+                Track Your Order →
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

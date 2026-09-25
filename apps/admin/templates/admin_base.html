@@ -1,0 +1,135 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-100 text-gray-900 antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard — ComCare{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Centralized Design System CSS -->
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/utilities.css' %}">
+
+    <!-- Tailwind CSS v3 CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: 'var(--color-accent)',
+                            500: 'var(--color-primary)',
+                            600: 'var(--color-primary-hover)',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['var(--font-primary)', 'sans-serif'],
+                        outfit: ['var(--font-heading)', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'xl': 'var(--radius-xl)',
+                        '2xl': 'var(--radius-2xl)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- HTMX CDN -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- Alpine.js CDN -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-100 font-sans antialiased min-h-screen" x-data="{ adminMobileSidebar: false, showProductModal: false, showCatModal: false, showOrderModal: false }" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <div class="min-h-screen flex">
+        <!-- Admin Sidebar -->
+        {% include 'admin_sidebar.html' %}
+
+        <!-- Main Admin Container -->
+        <div class="flex-1 flex flex-col min-w-0">
+            
+            <!-- Admin Top Navigation Bar -->
+            <header class="bg-white border-b border-gray-200 h-20 px-6 flex items-center justify-between sticky top-0 z-30 shadow-xs shrink-0">
+                <div class="flex items-center gap-4">
+                    <button @click="adminMobileSidebar = !adminMobileSidebar" class="md:hidden p-2 rounded-xl text-gray-600 hover:bg-gray-100 transition">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-900 font-outfit">{% block header_title %}Management Dashboard{% endblock %}</h1>
+                        <p class="text-xs text-gray-500 hidden sm:block">Real-time control over products, orders, inventory & repair leads</p>
+                    </div>
+                </div>
+
+                <!-- Header Right Tools -->
+                <div class="flex items-center gap-4">
+                    <div class="relative hidden sm:block">
+                        <input type="text" placeholder="Search orders, SKU, customer..." class="pl-9 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-xl text-xs w-64 focus:outline-none focus:border-[var(--color-primary)] focus:bg-white transition">
+                        <i data-lucide="search" class="w-3.5 h-3.5 text-gray-400 absolute left-3 top-3"></i>
+                    </div>
+
+                    <!-- Notifications Button -->
+                    <button class="relative p-2.5 rounded-xl text-gray-600 hover:bg-gray-100 transition" title="Alerts">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
+                    </button>
+
+                    <div class="h-6 w-px bg-gray-200"></div>
+
+                    <!-- Admin Profile Avatar -->
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-xs shadow-xs font-outfit uppercase">
+                            {% if request.user.first_name and request.user.last_name %}
+                                {{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}
+                            {% else %}
+                                {{ request.user.display_name|slice:":2" }}
+                            {% endif %}
+                        </div>
+                        <div class="hidden lg:block text-left">
+                            <div class="text-xs font-bold text-gray-900 leading-tight">{{ request.user.display_name }}</div>
+                            <div class="text-[10px] text-gray-500 font-semibold">Super Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main View Area -->
+            <main class="p-6 md:p-8 flex-1">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Global Modal Overlays (Body Root Level for 100% Fullscreen Viewport Coverage) -->
+    {% block modal %}{% endblock %}
+
+    <!-- Re-initialize Lucide Icons & Alpine Tree on HTMX swaps -->
+    <script>
+        function refreshIcons() {
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        }
+        document.addEventListener('DOMContentLoaded', refreshIcons);
+        document.addEventListener('htmx:afterSettle', function(evt) {
+            refreshIcons();
+            if (window.Alpine && evt.detail && evt.detail.elt) {
+                window.Alpine.initTree(evt.detail.elt);
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,93 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Returns & Exchanges — ComCare Admin Panel{% endblock %}
+{% block header_title %}Returns & Replacement{% endblock %}
+
+{% block content %}
+<div class="space-y-6" x-data="{ selectedReturn: null }">
+    
+    <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h2 class="text-base font-bold text-gray-900 font-outfit">Return Requests Queue (3 Pending Review)</h2>
+            <p class="text-xs text-gray-500">Inspect customer uploaded damage photos and approve replacement/refund</p>
+        </div>
+    </div>
+
+    <!-- Filters Bar (Reference Image Style) -->
+    <div class="bg-white p-4 rounded-3xl border border-gray-200 shadow-sm flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4" x-data="{ currentFilter: 'all' }">
+        <!-- Status Pill Filters -->
+        <div class="flex flex-wrap gap-2">
+            <button @click="currentFilter = 'all'" 
+                    class="px-4 py-2 text-xs font-bold rounded-xl transition duration-200"
+                    :class="currentFilter === 'all' ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                All Returns (12)
+            </button>
+            <button @click="currentFilter = 'pending'" 
+                    class="px-4 py-2 text-xs font-bold rounded-xl transition duration-200"
+                    :class="currentFilter === 'pending' ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                Pending Approval (3)
+            </button>
+            <button @click="currentFilter = 'approved'" 
+                    class="px-4 py-2 text-xs font-bold rounded-xl transition duration-200"
+                    :class="currentFilter === 'approved' ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                Approved (7)
+            </button>
+            <button @click="currentFilter = 'rejected'" 
+                    class="px-4 py-2 text-xs font-bold rounded-xl transition duration-200"
+                    :class="currentFilter === 'rejected' ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                Rejected (2)
+            </button>
+        </div>
+    </div>
+
+    <!-- Return Items Table -->
+    <div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-gray-50 text-gray-500 font-bold uppercase border-b">
+                    <tr>
+                        <th class="p-4">Return ID & Order</th>
+                        <th class="p-4">Customer</th>
+                        <th class="p-4">Reason for Return</th>
+                        <th class="p-4">Uploaded Verification Photos</th>
+                        <th class="p-4">Status</th>
+                        <th class="p-4 text-right">Inspection Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-gray-700">
+                    <tr>
+                        <td class="p-4">
+                            <div class="font-bold text-gray-900">#RET-89201-01</div>
+                            <div class="text-[10px] text-gray-400">Order #BIT-ORD-77109</div>
+                        </td>
+                        <td class="p-4 font-semibold">
+                            <div>Md. Farhan</div>
+                            <div class="text-[10px] text-gray-400">9801234567</div>
+                        </td>
+                        <td class="p-4">
+                            <span class="bg-red-50 text-red-700 font-bold px-2 py-0.5 rounded-full text-[10px]">Damaged Box Received</span>
+                            <p class="text-[11px] text-gray-500 mt-1">Outer packaging crushed during courier transit</p>
+                        </td>
+                        <td class="p-4 whitespace-nowrap">
+                            <div class="flex items-center gap-2">
+                                <div class="w-10 h-10 rounded-xl bg-gray-200 border flex items-center justify-center font-bold text-gray-600 cursor-pointer hover:border-[var(--color-primary)]">
+                                    <i data-lucide="image" class="w-5 h-5 text-gray-500"></i>
+                                </div>
+                                <span class="text-[10px] text-[var(--color-primary)] font-bold underline">2 Photos Uploaded</span>
+                            </div>
+                        </td>
+                        <td class="p-4 whitespace-nowrap">
+                            <span class="bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full text-[10px]">Pending Approval</span>
+                        </td>
+                        <td class="p-4 text-right space-x-2 whitespace-nowrap">
+                            <button class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl">Approve</button>
+                            <button class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 font-bold rounded-xl">Reject</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

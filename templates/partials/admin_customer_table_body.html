@@ -1,0 +1,9 @@
+{% for customer in customers %}
+    {% include 'partials/admin_customer_row.html' %}
+{% empty %}
+    <tr>
+        <td colspan="5" class="p-12 text-center text-gray-400 font-semibold text-xs">
+            No registered customers found.
+        </td>
+    </tr>
+{% endfor %}

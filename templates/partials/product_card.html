@@ -1,0 +1,10 @@
+<!-- Reusable Product Card Component -->
+{% if product %}
+    {% with card_id=product.id card_title=product.title card_price=product.selling_price card_old_price=product.original_price card_discount_percent=product.discount_percent card_is_sale=product.is_sale card_stock_status=product.stock_status card_stock_qty=product.stock_qty card_sku=product.sku card_category_name=product.category.name card_brand=product.brand card_rating=product.rating card_reviews_count=product.reviews_count card_slug=product.slug %}
+        {% include 'partials/product_card_body.html' %}
+    {% endwith %}
+{% else %}
+    {% with card_id=product_id card_title=title card_price=price card_old_price=old_price card_discount_percent=discount_percent card_is_sale=is_sale card_stock_status=stock_status card_stock_qty=stock_qty card_sku=sku card_category_name=category_name card_brand=brand card_rating=rating card_reviews_count=reviews_count image_url=image_url image_icon=image_icon card_slug=slug %}
+        {% include 'partials/product_card_body.html' %}
+    {% endwith %}
+{% endif %}

@@ -1,0 +1,86 @@
+<div id="inventory-metrics-and-filters" class="space-y-6">
+    <!-- Real-Time Stock Metrics Bar -->
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-6">
+        <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-1">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Products</span>
+            <div class="text-2xl font-extrabold text-gray-900 font-outfit">
+                <span id="inv-total-products">{{ total_products_count }} Products</span>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-1">
+            <span class="text-xs font-bold text-[var(--color-primary)] uppercase tracking-wider">Total Units in Stock</span>
+            <div class="text-2xl font-extrabold text-[var(--color-primary)] font-outfit">
+                <span id="inv-total-units">{{ total_stock_units }} Units</span>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-1">
+            <span class="text-xs font-bold text-amber-600 uppercase tracking-wider">Low Stock (≤ 5 Units)</span>
+            <div class="text-2xl font-extrabold text-amber-600 font-outfit">
+                <span id="inv-low-stock">{{ lowstock_count }} Products</span>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm space-y-1">
+            <span class="text-xs font-bold text-red-600 uppercase tracking-wider">Out of Stock (0 Units)</span>
+            <div class="text-2xl font-extrabold text-red-600 font-outfit">
+                <span id="inv-out-of-stock">{{ outofstock_count }} Products</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters & Search Bar -->
+    <div class="bg-white p-4 rounded-3xl border border-gray-200 shadow-sm flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4" x-data="{ currentFilter: '{{ current_filter|default:'all' }}' }">
+        
+        <!-- Stock Filter Pills (HTMX Async + Alpine State) -->
+        <div class="flex flex-wrap gap-2 text-xs font-bold">
+            <button hx-get="{% url 'admin_inventory' %}?filter=all"
+                    hx-target="#inventory-table-body"
+                    hx-push-url="true"
+                    @click="currentFilter = 'all'"
+                    class="px-4 py-2 rounded-xl transition duration-200 whitespace-nowrap"
+                    :class="currentFilter === 'all' || !currentFilter ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                All Stock <span id="inv-pill-all">({{ total_products_count }})</span>
+            </button>
+
+            <button hx-get="{% url 'admin_inventory' %}?filter=instock"
+                    hx-target="#inventory-table-body"
+                    hx-push-url="true"
+                    @click="currentFilter = 'instock'"
+                    class="px-4 py-2 rounded-xl transition duration-200 whitespace-nowrap"
+                    :class="currentFilter === 'instock' ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                In Stock <span id="inv-pill-instock">({{ instock_count }})</span>
+            </button>
+
+            <button hx-get="{% url 'admin_inventory' %}?filter=lowstock"
+                    hx-target="#inventory-table-body"
+                    hx-push-url="true"
+                    @click="currentFilter = 'lowstock'"
+                    class="px-4 py-2 rounded-xl transition duration-200 whitespace-nowrap"
+                    :class="currentFilter === 'lowstock' ? 'bg-amber-500 text-white shadow-md shadow-amber-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                Low Stock <span id="inv-pill-lowstock">({{ lowstock_count }})</span>
+            </button>
+
+            <button hx-get="{% url 'admin_inventory' %}?filter=outofstock"
+                    hx-target="#inventory-table-body"
+                    hx-push-url="true"
+                    @click="currentFilter = 'outofstock'"
+                    class="px-4 py-2 rounded-xl transition duration-200 whitespace-nowrap"
+                    :class="currentFilter === 'outofstock' ? 'bg-red-600 text-white shadow-md shadow-red-500/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'">
+                Out of Stock <span id="inv-pill-outofstock">({{ outofstock_count }})</span>
+            </button>
+        </div>
+
+        <!-- Live Search Input (HTMX) -->
+        <div class="relative min-w-[260px]">
+            <input type="text"
+                   name="q"
+                   value="{{ q }}"
+                   placeholder="Search product title, SKU, brand..."
+                   hx-get="{% url 'admin_inventory' %}"
+                   hx-trigger="keyup changed delay:350ms, search"
+                   hx-target="#inventory-table-body"
+                   class="w-full pl-9 pr-4 py-2.5 bg-[var(--color-background)] border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-[var(--color-primary)] focus:bg-white transition">
+            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-3"></i>
+        </div>
+
+    </div>
+</div>

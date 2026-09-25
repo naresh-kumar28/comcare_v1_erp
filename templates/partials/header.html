@@ -1,0 +1,247 @@
+{% load static %}
+
+<!-- ============ COMCARE — WORKING HEADER ============ -->
+
+<!-- Top Notification Bar (scrolls away) -->
+<div class="bg-[var(--color-primary)] text-white text-[12px] sm:text-[13px] py-1.5 sm:py-2 font-poppins">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6">
+        
+        <!-- Desktop / Tablet View (sm and up) -->
+        <div class="hidden sm:flex justify-between items-center gap-4">
+            <!-- Left Announcement Offer -->
+            <div class="flex items-center gap-2 truncate">
+                <span class="bg-white/20 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                   🔥 OFFER
+                </span>
+                <span class="font-medium text-white truncate text-xs sm:text-sm">
+                    <strong>Franchise Sale</strong> — Up to 40% OFF + Free Delivery & Installation!
+                </span>
+            </div>
+
+            <!-- Right Helpline & Franchise Link -->
+            <div class="flex items-center gap-3 shrink-0 font-medium text-xs sm:text-sm">
+                <a href="tel:7782933700" class="flex items-center gap-1.5 hover:text-white/90 transition">
+                    <i data-lucide="phone" class="w-3.5 h-3.5 stroke-[2.5]"></i>
+                    <span>Helpline: <strong>+91 7782933700</strong></span>
+                </a>
+
+                <span class="h-3.5 w-px bg-white/40"></span>
+
+                <a href="{% url 'contact' %}" class="flex items-center gap-1.5 hover:text-white/90 transition font-semibold">
+                    <i data-lucide="store" class="w-3.5 h-3.5 stroke-[2.5]"></i>
+                    <span>Become Franchise Partner</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Mobile View (< sm): Sleek, single-line, zero overflow -->
+        <div class="flex sm:hidden items-center justify-between gap-2 text-[11px]">
+            <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                <span class="bg-white/20 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                   🔥 OFFER
+                </span>
+                <span class="font-medium text-white truncate text-[11px]">
+                    <strong>Franchise Sale</strong>: Up to 40% OFF
+                </span>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+                <a href="tel:7782933700" class="flex items-center gap-1 bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-full font-semibold text-white transition text-[11px]">
+                    <i data-lucide="phone" class="w-3 h-3 stroke-[2.5]"></i>
+                    <span>Call</span>
+                </a>
+                <span class="h-3 w-px bg-white/30"></span>
+                <a href="{% url 'contact' %}" class="font-medium text-white/90 hover:text-white underline underline-offset-2 text-[11px]">
+                    Franchise
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Main Header (Sticky) -->
+<header class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm font-poppins" x-data="{ mobileMenuOpen: false, searchFocused: false, searchQuery: '', mobileSearchFocused: false, mobileSearchQuery: '', userDropdownOpen: false, categoryOpen: false, darkMode: document.documentElement.classList.contains('dark') }">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-2">
+            <div class="flex items-center justify-between gap-4 lg:gap-8">
+
+                <!-- Main Brand Logo -->
+                <a href="{% url 'home' %}" class="flex items-center gap-2 group shrink-0">
+                    <img src="{% static 'images/home/comcare_logo.png' %}" class="h-12 md:h-14 w-auto object-contain" alt="ComCare">
+                </a>
+
+                <!-- Dark Mode Logo (Commented Out)
+                <a href="{% url 'home' %}" x-show="darkMode" x-cloak class="flex items-center gap-2 group shrink-0 hidden dark:flex">
+                    <img src="{% static 'images/home/white_logo.png' %}" class="h-12 md:h-16 w-auto object-contain" alt="ComCare">
+                </a>
+                -->
+
+                <!-- Combined Search Bar -->
+                <div class="hidden md:flex flex-1 max-w-3xl relative">
+                    <form action="{% url 'shop' %}" method="get" class="flex w-full border-2 border-gray-100 rounded-lg focus-within:border-[var(--color-primary)]/40 transition-colors">
+
+                        <!-- Search Input -->
+                        <div class="relative flex-1">
+                            <input
+                                type="text"
+                                name="q"
+                                x-model="searchQuery"
+                                placeholder="Search for products, brands and more..."
+                                class="w-full h-full px-4 py-2.5 text-sm text-gray-700 bg-transparent focus:outline-none"
+                                @focus="searchFocused = true"
+                                @click.away="searchFocused = false"
+                                hx-get="{% url 'search' %}"
+                                hx-trigger="keyup changed delay:300ms, search"
+                                hx-target="#search-results-preview"
+                            />
+
+                            <!-- Search Dropdown Preview -->
+                            <div x-cloak x-show="searchFocused && searchQuery.trim().length > 0" x-transition class="absolute top-full left-0 right-0 mt-3 bg-white rounded-xl shadow-xl border border-gray-100 p-4 z-50">
+                                <!-- Live HTMX Search Results Container -->
+                                <div id="search-results-preview"></div>
+                            </div>
+                        </div>
+
+                        <!-- Search Button -->
+                        <button type="submit" class="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-8 py-1 rounded-r-md rounded-l-sm text-sm font-semibold transition shrink-0">
+                            Search
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Action Tools -->
+                <div class="flex items-center gap-5 md:gap-7 shrink-0">
+
+                    <!-- Wishlist -->
+                    <a href="{% url 'wishlist' %}" class="relative flex flex-col items-center gap-1 text-gray-600 hover:text-[var(--color-primary)] transition">
+                        <div class="relative">
+                            <i data-lucide="heart" class="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]"></i>
+                            <span id="header-wishlist-badge" class="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-[var(--color-danger)] text-white text-[9px] font-bold flex items-center justify-center border-2 border-white">{{ wishlist_count|default:0 }}</span>
+                        </div>
+                        <!-- <span class="text-[10px] md:text-xs font-medium">Wishlist</span> -->
+                    </a>
+
+                    <!-- Cart -->
+                    <a href="{% url 'cart' %}" class="relative flex flex-col items-center gap-1 text-gray-600 hover:text-[var(--color-primary)] transition">
+                        <div class="relative">
+                            <i data-lucide="shopping-cart" class="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]"></i>
+                            <span id="header-cart-badge" class="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-[var(--color-primary)] text-white text-[9px] font-bold flex items-center justify-center border-2 border-white">{{ cart_count|default:0 }}</span>
+                        </div>
+                        <!-- <span class="text-[10px] md:text-xs font-medium">Cart</span> -->
+                    </a>
+
+                    <!-- Theme Toggle -->
+                    <button @click="
+                        darkMode = !darkMode;
+                        if (darkMode) {
+                            document.documentElement.classList.add('dark');
+                            localStorage.setItem('theme', 'dark');
+                        } else {
+                            document.documentElement.classList.remove('dark');
+                            localStorage.setItem('theme', 'light');
+                        }
+                    " class="flex flex-col items-center gap-1 text-gray-600 hover:text-[var(--color-primary)] transition dark:text-gray-300 dark:hover:text-[var(--color-primary)]">
+                        <div class="relative">
+                            <i data-lucide="sun" class="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]" x-show="darkMode" x-cloak></i>
+                            <i data-lucide="moon" class="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]" x-show="!darkMode"></i>
+                        </div>
+                        <!-- <span class="text-[10px] md:text-xs font-medium">Theme</span> -->
+                    </button>
+
+                    <!-- Account / User Dropdown -->
+                    <div class="relative" @click.away="userDropdownOpen = false">
+                        <button @click="userDropdownOpen = !userDropdownOpen" class="flex flex-col items-center gap-1 text-gray-600 hover:text-[var(--color-primary)] transition">
+                            {% if request.user.is_authenticated %}
+                                {% if request.user.profile_picture %}
+                                    <img src="{{ request.user.profile_picture.url }}" alt="{{ request.user.display_name }}" class="w-6 h-6 md:w-7 md:h-7 rounded-full object-cover border border-gray-200 shadow-xs">
+                                {% else %}
+                                    <div class="w-6 h-6 md:w-7 md:h-7 rounded-full bg-[var(--color-primary)] text-white text-[10px] md:text-xs font-bold flex items-center justify-center border border-white shadow-xs font-outfit uppercase">
+                                        {% if request.user.first_name and request.user.last_name %}
+                                            {{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}
+                                        {% else %}
+                                            {{ request.user.display_name|slice:":2" }}
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <i data-lucide="user" class="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]"></i>
+                            {% endif %}
+                            <!-- <span class="text-[10px] md:text-xs font-medium">Account</span> -->
+                        </button>
+
+                        <div x-cloak x-show="userDropdownOpen" x-transition class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                            {% if request.user.is_authenticated %}
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <p class="text-xs text-gray-500">Signed in as</p>
+                                <p class="text-sm font-bold text-gray-900 truncate">{{ request.user.display_name }}</p>
+                            </div>
+                            <a href="{% url 'dashboard' %}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[var(--color-primary)]">
+                                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+                            </a>
+                            <a href="{% url 'account_orders' %}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[var(--color-primary)]">
+                                <i data-lucide="package" class="w-4 h-4"></i> My Orders
+                            </a>
+                            <a href="{% url 'services' %}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[var(--color-primary)]">
+                                <i data-lucide="wrench" class="w-4 h-4"></i> Repair Status
+                            </a>
+                            {% if request.user.is_staff or request.user.is_superuser %}
+                            <div class="border-t border-gray-100 my-1"></div>
+                            <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-amber-700 bg-amber-50 hover:bg-amber-100 font-semibold">
+                                <i data-lucide="shield-alert" class="w-4 h-4"></i> Admin Panel
+                            </a>
+                            {% endif %}
+                            <div class="border-t border-gray-100 my-1"></div>
+                            <form action="{% url 'logout' %}" method="post" class="w-full">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-[var(--color-danger)] hover:bg-red-50 text-left font-medium transition">
+                                    <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                                </button>
+                            </form>
+                            {% else %}
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <p class="text-xs text-gray-500">Welcome Guest</p>
+                                <p class="text-xs font-bold text-gray-900">Sign in to manage orders</p>
+                            </div>
+                            <a href="{% url 'login' %}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[var(--color-primary)]">
+                                <i data-lucide="log-in" class="w-4 h-4"></i> Login
+                            </a>
+                            <a href="{% url 'register' %}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[var(--color-primary)]">
+                                <i data-lucide="user-plus" class="w-4 h-4"></i> Register
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Search (Visible only on small screens) -->
+        <div class="md:hidden px-4 pb-4 relative">
+            <form action="{% url 'shop' %}" method="get" class="flex w-full border border-gray-200 rounded-lg overflow-hidden focus-within:border-[var(--color-primary)]/40 transition-colors">
+                <div class="relative flex-1">
+                    <input
+                        type="text"
+                        name="q"
+                        x-model="mobileSearchQuery"
+                        placeholder="Search products..."
+                        class="w-full h-full px-3 py-2 text-sm text-gray-700 bg-gray-50 focus:bg-white focus:outline-none"
+                        @focus="mobileSearchFocused = true"
+                        @click.away="mobileSearchFocused = false"
+                        hx-get="{% url 'search' %}"
+                        hx-trigger="keyup changed delay:300ms, search"
+                        hx-target="#search-results-preview-mobile"
+                    />
+                </div>
+                <button type="submit" class="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-4 py-2 shrink-0 transition">
+                    <i data-lucide="search" class="w-4 h-4"></i>
+                </button>
+            </form>
+
+            <!-- Mobile Search Dropdown Preview -->
+            <div x-cloak x-show="mobileSearchFocused && mobileSearchQuery.trim().length > 0" x-transition class="absolute top-full left-4 right-4 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 p-4 z-50">
+                <!-- Live HTMX Search Results Container -->
+                <div id="search-results-preview-mobile"></div>
+            </div>
+        </div>
+
+</header>
